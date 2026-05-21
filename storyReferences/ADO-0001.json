@@ -1,0 +1,11 @@
+{
+  "story": "ADO-0001",
+  "elements": [
+    {
+      "interface": "bissell",
+      "type": "reports",
+      "id": "116547",
+      "operation": "ADD"
+    }
+  ]
+}
