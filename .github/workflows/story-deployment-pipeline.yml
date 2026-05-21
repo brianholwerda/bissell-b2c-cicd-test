@@ -1,0 +1,480 @@
+name: Story Deployment Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_environment:
+        description: 'Source Environment'
+        required: true
+        type: choice
+        options:
+          - TST2
+          - TST1
+          - TST3
+      target_environment:
+        description: 'Target Environment'
+        required: true
+        type: choice
+        options:
+          - TST1
+          - TST3
+          - PROD
+      story_list:
+        description: 'Story Numbers to Deploy (comma-separated e.g. ADO-5542,ADO-5601 - leave blank to use deploymentConfig.json)'
+        required: false
+        type: string
+      skip_diff_review:
+        description: 'Skip Diff Review Step? (not recommended for PROD)'
+        required: true
+        type: boolean
+        default: false
+      skip_dependent_objects:
+        description: 'Skip Dependent Custom Objects?'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  # -------------------------------------------------------
+  # Job 1 - Validate and Prepare
+  # -------------------------------------------------------
+  validate:
+    name: Validate and Prepare
+    runs-on: ubuntu-latest
+
+    outputs:
+      source_branch: ${{ steps.set_branches.outputs.source_branch }}
+      target_branch: ${{ steps.set_branches.outputs.target_branch }}
+      source_url: ${{ steps.set_branches.outputs.source_url }}
+      target_url: ${{ steps.set_branches.outputs.target_url }}
+      story_list: ${{ steps.set_stories.outputs.story_list }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate Environment Combination
+        run: |
+          SOURCE="${{ github.event.inputs.source_environment }}"
+          TARGET="${{ github.event.inputs.target_environment }}"
+
+          echo "=========================================="
+          echo "Story Deployment Pipeline Starting"
+          echo "=========================================="
+          echo "Source : $SOURCE"
+          echo "Target : $TARGET"
+          echo "=========================================="
+
+          # Prevent invalid promotions
+          if [ "$SOURCE" == "$TARGET" ]; then
+            echo "ERROR: Source and target environments cannot be the same."
+            exit 1
+          fi
+
+          if [ "$SOURCE" == "TST1" ] && [ "$TARGET" == "TST2" ]; then
+            echo "ERROR: Cannot deploy backwards from TST1 to TST2."
+            exit 1
+          fi
+
+          if [ "$SOURCE" == "PROD" ]; then
+            echo "ERROR: Cannot use PROD as a source environment."
+            exit 1
+          fi
+
+          echo "Environment combination is valid."
+
+      - name: Set Branch and URL Values
+        id: set_branches
+        run: |
+          SOURCE="${{ github.event.inputs.source_environment }}"
+          TARGET="${{ github.event.inputs.target_environment }}"
+
+          case "$SOURCE" in
+            TST2)
+              echo "source_branch=tst2" >> $GITHUB_OUTPUT
+              echo "source_url=bissell--tst2.custhelp.com" >> $GITHUB_OUTPUT
+              ;;
+            TST1)
+              echo "source_branch=tst1" >> $GITHUB_OUTPUT
+              echo "source_url=bissell--tst1.custhelp.com" >> $GITHUB_OUTPUT
+              ;;
+            TST3)
+              echo "source_branch=tst3" >> $GITHUB_OUTPUT
+              echo "source_url=bissell--tst3.custhelp.com" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+          case "$TARGET" in
+            TST1)
+              echo "target_branch=tst1" >> $GITHUB_OUTPUT
+              echo "target_url=bissell--tst1.custhelp.com" >> $GITHUB_OUTPUT
+              ;;
+            TST3)
+              echo "target_branch=tst3" >> $GITHUB_OUTPUT
+              echo "target_url=bissell--tst3.custhelp.com" >> $GITHUB_OUTPUT
+              ;;
+            PROD)
+              echo "target_branch=main" >> $GITHUB_OUTPUT
+              echo "target_url=support.bissell.com" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Resolve Story List
+        id: set_stories
+        run: |
+          INPUT_STORIES="${{ github.event.inputs.story_list }}"
+          TARGET="${{ github.event.inputs.target_environment }}"
+
+          if [ -n "$INPUT_STORIES" ]; then
+            echo "Using provided story list: $INPUT_STORIES"
+            echo "story_list=$INPUT_STORIES" >> $GITHUB_OUTPUT
+          else
+            echo "No stories provided - reading from deploymentConfig.json..."
+            STORIES=$(python3 -c "
+          import json
+          with open('deploymentConfig.json') as f:
+            config = json.load(f)
+          stories = config['environments'].get('$TARGET', {}).get('stories', [])
+          print(','.join(stories))
+            ")
+            if [ -z "$STORIES" ]; then
+              echo "ERROR: No stories found in deploymentConfig.json for $TARGET"
+              exit 1
+            fi
+            echo "Stories from config: $STORIES"
+            echo "story_list=$STORIES" >> $GITHUB_OUTPUT
+          fi
+
+  # -------------------------------------------------------
+  # Job 2 - Generate Diff Report
+  # -------------------------------------------------------
+  diff_review:
+    name: Generate Diff Report
+    runs-on: ubuntu-latest
+    needs: validate
+    environment: ${{ github.event.inputs.source_environment }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate Diff Between Source and Target Branches
+        run: |
+          SOURCE_BRANCH="${{ needs.validate.outputs.source_branch }}"
+          TARGET_BRANCH="${{ needs.validate.outputs.target_branch }}"
+          STORIES="${{ needs.validate.outputs.story_list }}"
+
+          echo "Generating diff between $SOURCE_BRANCH and $TARGET_BRANCH..."
+
+          git fetch origin "$SOURCE_BRANCH" "$TARGET_BRANCH"
+
+          # Generate diff for each story
+          IFS=',' read -ra STORY_ARRAY <<< "$STORIES"
+
+          DIFF_CONTENT="<html><head><title>Diff Report</title>"
+          DIFF_CONTENT+="<style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; }
+            h2 { color: #666; border-bottom: 1px solid #ccc; }
+            h3 { color: #999; }
+            .added { background-color: #e6ffed; color: #24292e; }
+            .removed { background-color: #ffeef0; color: #24292e; }
+            .unchanged { background-color: #fff; color: #24292e; }
+            pre { background: #f6f8fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+            .summary { background: #f1f8ff; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+          </style></head><body>"
+
+          DIFF_CONTENT+="<h1>Deployment Diff Report</h1>"
+          DIFF_CONTENT+="<div class='summary'>"
+          DIFF_CONTENT+="<p><strong>Source:</strong> $SOURCE_BRANCH (${{ github.event.inputs.source_environment }})</p>"
+          DIFF_CONTENT+="<p><strong>Target:</strong> $TARGET_BRANCH (${{ github.event.inputs.target_environment }})</p>"
+          DIFF_CONTENT+="<p><strong>Stories:</strong> $STORIES</p>"
+          DIFF_CONTENT+="<p><strong>Generated:</strong> $(date -u)</p>"
+          DIFF_CONTENT+="</div>"
+
+          for STORY in "${STORY_ARRAY[@]}"; do
+            STORY=$(echo "$STORY" | tr -d ' ')
+            STORY_BRANCH="story-$STORY"
+            DIFF_CONTENT+="<h2>Story: $STORY</h2>"
+
+            # Get list of changed files for this story
+            CHANGED_FILES=$(git diff --name-only "origin/$TARGET_BRANCH" "origin/$SOURCE_BRANCH" -- "customisations/" 2>/dev/null || echo "")
+
+            if [ -z "$CHANGED_FILES" ]; then
+              DIFF_CONTENT+="<p>No changes detected for this story.</p>"
+            else
+              while IFS= read -r FILE; do
+                DIFF_CONTENT+="<h3>$FILE</h3><pre>"
+                FILE_DIFF=$(git diff "origin/$TARGET_BRANCH" "origin/$SOURCE_BRANCH" -- "$FILE" 2>/dev/null || echo "Unable to generate diff")
+                DIFF_CONTENT+=$(echo "$FILE_DIFF" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+                DIFF_CONTENT+="</pre>"
+              done <<< "$CHANGED_FILES"
+            fi
+          done
+
+          DIFF_CONTENT+="</body></html>"
+
+          echo "$DIFF_CONTENT" > diff_report.html
+          echo "Diff report generated successfully."
+
+      - name: Upload Diff Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: diff-report-${{ github.run_number }}
+          path: diff_report.html
+          retention-days: 7
+
+      - name: Diff Report Instructions
+        run: |
+          echo "=========================================="
+          echo "DIFF REPORT READY FOR REVIEW"
+          echo "=========================================="
+          echo "Download the diff report artifact from:"
+          echo "Actions > This Run > Artifacts > diff-report-${{ github.run_number }}"
+          echo ""
+          echo "Review all changes before proceeding."
+          echo "=========================================="
+
+  # -------------------------------------------------------
+  # Job 3 - Manual Approval Gate
+  # -------------------------------------------------------
+  approval:
+    name: Awaiting Deployment Approval
+    runs-on: ubuntu-latest
+    needs: diff_review
+    environment: ${{ github.event.inputs.target_environment }}
+    if: ${{ github.event.inputs.skip_diff_review != 'true' }}
+
+    steps:
+      - name: Approval Gate
+        run: |
+          echo "=========================================="
+          echo "DEPLOYMENT APPROVED"
+          echo "Proceeding to deploy to ${{ github.event.inputs.target_environment }}..."
+          echo "=========================================="
+
+  # -------------------------------------------------------
+  # Job 4 - Deploy to Target Environment
+  # -------------------------------------------------------
+  deploy:
+    name: Deploy to ${{ github.event.inputs.target_environment }}
+    runs-on: ubuntu-latest
+    needs: [validate, approval]
+    environment: ${{ github.event.inputs.target_environment }}
+    if: always() && (needs.approval.result == 'success' || github.event.inputs.skip_diff_review == 'true')
+
+    env:
+      SOURCE_URL: ${{ needs.validate.outputs.source_url }}
+      TARGET_URL: ${{ needs.validate.outputs.target_url }}
+      SOURCE_BRANCH: ${{ needs.validate.outputs.source_branch }}
+      TARGET_BRANCH: ${{ needs.validate.outputs.target_branch }}
+      STORY_LIST: ${{ needs.validate.outputs.story_list }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Authenticate with Source B2C
+        run: |
+          echo "Authenticating with source B2C at $SOURCE_URL..."
+
+          AUTH_RESPONSE=$(curl -s -X POST \
+            "https://$SOURCE_URL/services/rest/connect/v1.4/sessions" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"username\": \"${{ secrets.B2C_SITE_LOGIN_USER }}\",
+              \"password\": \"${{ secrets.B2C_SITE_LOGIN_PASS }}\"
+            }")
+
+          SOURCE_TOKEN=$(echo "$AUTH_RESPONSE" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          print(data.get('token', ''))
+          ")
+
+          if [ -z "$SOURCE_TOKEN" ]; then
+            echo "ERROR: Source authentication failed."
+            exit 1
+          fi
+
+          echo "::add-mask::$SOURCE_TOKEN"
+          echo "SOURCE_TOKEN=$SOURCE_TOKEN" >> $GITHUB_ENV
+          echo "Source authentication successful."
+
+      - name: Authenticate with Target B2C
+        run: |
+          echo "Authenticating with target B2C at $TARGET_URL..."
+
+          AUTH_RESPONSE=$(curl -s -X POST \
+            "https://$TARGET_URL/services/rest/connect/v1.4/sessions" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"username\": \"${{ secrets.B2C_SITE_LOGIN_USER }}\",
+              \"password\": \"${{ secrets.B2C_SITE_LOGIN_PASS }}\"
+            }")
+
+          TARGET_TOKEN=$(echo "$AUTH_RESPONSE" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          print(data.get('token', ''))
+          ")
+
+          if [ -z "$TARGET_TOKEN" ]; then
+            echo "ERROR: Target authentication failed."
+            exit 1
+          fi
+
+          echo "::add-mask::$TARGET_TOKEN"
+          echo "TARGET_TOKEN=$TARGET_TOKEN" >> $GITHUB_ENV
+          echo "Target authentication successful."
+
+      - name: Deploy Elements to Target
+        run: |
+          echo "Deploying stories to ${{ github.event.inputs.target_environment }}..."
+
+          IFS=',' read -ra STORY_ARRAY <<< "$STORY_LIST"
+
+          for STORY in "${STORY_ARRAY[@]}"; do
+            STORY=$(echo "$STORY" | tr -d ' ')
+            echo "----------------------------------------"
+            echo "Processing story: $STORY"
+            echo "----------------------------------------"
+
+            STORY_CONFIG="storyReferences/$STORY.json"
+
+            if [ ! -f "$STORY_CONFIG" ]; then
+              echo "WARNING: No story config found for $STORY - skipping."
+              continue
+            fi
+
+            # Read elements from story config
+            python3 << PYEOF
+          import json, subprocess, sys
+
+          with open('$STORY_CONFIG') as f:
+            story = json.load(f)
+
+          elements = story.get('elements', [])
+          print(f"Found {len(elements)} elements for story $STORY")
+
+          for element in elements:
+            interface = element['interface']
+            elem_type = element['type']
+            elem_id = element['id']
+            operation = element.get('operation', 'ADD')
+
+            print(f"  Deploying: {interface}/{elem_type}/{elem_id} ({operation})")
+
+            # Map element type to EM API endpoint
+            em_type_map = {
+              'workspaces': 'workspaces',
+              'reports': 'reports',
+              'navigation_sets': 'navigationSets',
+              'agent_scripts': 'agentScripts',
+              'standard_text': 'standardText',
+              'ebr': 'exceptionBasedReporting',
+              'extensions': 'extensions',
+              'scripts': 'scripts',
+              'process_models': 'processModels'
+            }
+
+            if elem_type == 'cp_files':
+              # WebDAV deployment for CP files
+              file_path = f"customisations/{interface}/cp_files/{elem_id}"
+              result = subprocess.run([
+                'curl', '-s', '-T', file_path,
+                '-u', '${{ secrets.B2C_CP_LOGIN_USER }}:${{ secrets.B2C_CP_LOGIN_PASS }}',
+                f'https://$TARGET_URL/dav/cp/customer/development/controllers/{elem_id}'
+              ], capture_output=True, text=True)
+              if result.returncode != 0:
+                print(f"  ERROR: Failed to deploy CP file {elem_id}")
+                sys.exit(1)
+            else:
+              em_type = em_type_map.get(elem_type)
+              if not em_type:
+                print(f"  WARNING: Unknown element type {elem_type} - skipping")
+                continue
+
+              # EM API deployment
+              file_path = f"customisations/{interface}/{elem_type}/{elem_id}.json"
+              if not __import__('os').path.exists(file_path):
+                print(f"  WARNING: File not found {file_path} - skipping")
+                continue
+
+              with open(file_path) as f:
+                element_data = f.read()
+
+              result = subprocess.run([
+                'curl', '-s', '-X', 'POST',
+                f'https://$TARGET_URL/services/rest/connect/v1.4/elementManager/{em_type}',
+                '-H', 'Authorization: Session $TARGET_TOKEN',
+                '-H', 'Content-Type: application/json',
+                '-d', element_data
+              ], capture_output=True, text=True)
+
+              if result.returncode != 0:
+                print(f"  ERROR: Failed to deploy {elem_id}")
+                sys.exit(1)
+
+            print(f"  Successfully deployed: {elem_id}")
+
+          print(f"Story $STORY deployment complete.")
+          PYEOF
+          done
+
+          echo "All stories deployed successfully."
+
+      - name: Update Target Branch in Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin
+          git checkout "$TARGET_BRANCH"
+          git merge "origin/$SOURCE_BRANCH" --no-ff \
+            -m "Deploy stories [$STORY_LIST] from ${{ github.event.inputs.source_environment }} to ${{ github.event.inputs.target_environment }} [$(date -u)]"
+          git push origin "$TARGET_BRANCH"
+
+          echo "Target branch $TARGET_BRANCH updated successfully."
+
+      - name: Deployment Summary
+        run: |
+          echo "=========================================="
+          echo "Story Deployment Complete!"
+          echo "Source      : ${{ github.event.inputs.source_environment }}"
+          echo "Target      : ${{ github.event.inputs.target_environment }}"
+          echo "Stories     : $STORY_LIST"
+          echo "Timestamp   : $(date -u)"
+          echo "=========================================="
+
+  # -------------------------------------------------------
+  # Job 5 - Rollback (runs only if deploy fails)
+  # -------------------------------------------------------
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: failure()
+
+    steps:
+      - name: Notify Rollback Required
+        run: |
+          echo "=========================================="
+          echo "WARNING: Deployment failed!"
+          echo "Target Environment : ${{ github.event.inputs.target_environment }}"
+          echo "Stories            : ${{ needs.validate.outputs.story_list }}"
+          echo ""
+          echo "Please review the deployment logs above."
+          echo "Manual intervention may be required to"
+          echo "restore the target environment to its"
+          echo "previous state."
+          echo "=========================================="
