@@ -374,6 +374,7 @@ jobs:
                 f'https://$TARGET_URL/services/rest/connect/v1.4/elementManager/{em_type}',
                 '-H', 'Authorization: Basic $BASIC_AUTH',
                 '-H', 'Content-Type: application/json',
+                '-H', 'OSvC-CREST-Application-Context: cicd-pipeline',
                 '-d', element_data
               ], capture_output=True, text=True)
 

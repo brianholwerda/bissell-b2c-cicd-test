@@ -255,7 +255,8 @@ jobs:
               # Export by ID or name
               EXPORT_RESPONSE=$(curl -s -X GET \
                 "https://$SOURCE_URL/services/rest/connect/v1.4/elementManager/$EM_TYPE?q=name='$ELEMENT_ID'" \
-                -H "Authorization: Basic $BASIC_AUTH")
+                -H "Authorization: Basic $BASIC_AUTH" \
+                -H "OSvC-CREST-Application-Context: cicd-pipeline")
 
               echo "$EXPORT_RESPONSE" > "$EXPORT_DIR/${ELEMENT_ID}.json"
               echo "Element exported: $ELEMENT_ID"
@@ -268,7 +269,8 @@ jobs:
 
               EXPORT_RESPONSE=$(curl -s -X GET \
                 "https://$SOURCE_URL/services/rest/connect/v1.4/elementManager/$EM_TYPE?q=$DATE_FILTER" \
-                -H "Authorization: Basic $BASIC_AUTH")
+                -H "Authorization: Basic $BASIC_AUTH" \
+                -H "OSvC-CREST-Application-Context: cicd-pipeline")
 
               echo "$EXPORT_RESPONSE" > "$EXPORT_DIR/date_range_export.json"
               echo "Elements exported by date range: $FROM_DATE to $TO_DATE"

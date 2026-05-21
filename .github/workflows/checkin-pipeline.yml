@@ -194,14 +194,16 @@ jobs:
             EXPORT_RESPONSE=$(curl -s -X GET \
               "https://$B2C_URL/services/rest/connect/v1.4/elementManager/$EM_TYPE/$ELEMENT_ID" \
               -H "Authorization: Basic $BASIC_AUTH" \
-              -H "Content-Type: application/json")
+              -H "Content-Type: application/json" \
+              -H "OSvC-CREST-Application-Context: cicd-pipeline")
           else
             echo "Text name detected - querying by name..."
             ENCODED_ELEMENT_ID=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$ELEMENT_ID'))")
             EXPORT_RESPONSE=$(curl -s -X GET \
               "https://$B2C_URL/services/rest/connect/v1.4/elementManager/$EM_TYPE?q=name='$ENCODED_ELEMENT_ID'" \
               -H "Authorization: Basic $BASIC_AUTH" \
-              -H "Content-Type: application/json")
+              -H "Content-Type: application/json" \
+              -H "OSvC-CREST-Application-Context: cicd-pipeline")
           fi
 
           # Check for error in response
