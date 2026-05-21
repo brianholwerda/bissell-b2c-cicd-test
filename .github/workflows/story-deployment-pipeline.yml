@@ -283,59 +283,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Authenticate with Source B2C
+      - name: Set Basic Auth Header
         run: |
-          echo "Authenticating with source B2C at $SOURCE_URL..."
+          echo "Setting up Basic Auth..."
 
-          AUTH_RESPONSE=$(curl -s -X POST \
-            "https://$SOURCE_URL/services/rest/connect/v1.4/sessions" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"username\": \"${{ secrets.B2C_SITE_LOGIN_USER }}\",
-              \"password\": \"${{ secrets.B2C_SITE_LOGIN_PASS }}\"
-            }")
+          BASIC_AUTH=$(echo -n "${{ secrets.B2C_SITE_LOGIN_USER }}:${{ secrets.B2C_SITE_LOGIN_PASS }}" | base64 -w 0)
 
-          SOURCE_TOKEN=$(echo "$AUTH_RESPONSE" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          print(data.get('token', ''))
-          ")
-
-          if [ -z "$SOURCE_TOKEN" ]; then
-            echo "ERROR: Source authentication failed."
-            exit 1
-          fi
-
-          echo "::add-mask::$SOURCE_TOKEN"
-          echo "SOURCE_TOKEN=$SOURCE_TOKEN" >> $GITHUB_ENV
-          echo "Source authentication successful."
-
-      - name: Authenticate with Target B2C
-        run: |
-          echo "Authenticating with target B2C at $TARGET_URL..."
-
-          AUTH_RESPONSE=$(curl -s -X POST \
-            "https://$TARGET_URL/services/rest/connect/v1.4/sessions" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"username\": \"${{ secrets.B2C_SITE_LOGIN_USER }}\",
-              \"password\": \"${{ secrets.B2C_SITE_LOGIN_PASS }}\"
-            }")
-
-          TARGET_TOKEN=$(echo "$AUTH_RESPONSE" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          print(data.get('token', ''))
-          ")
-
-          if [ -z "$TARGET_TOKEN" ]; then
-            echo "ERROR: Target authentication failed."
-            exit 1
-          fi
-
-          echo "::add-mask::$TARGET_TOKEN"
-          echo "TARGET_TOKEN=$TARGET_TOKEN" >> $GITHUB_ENV
-          echo "Target authentication successful."
+          echo "::add-mask::$BASIC_AUTH"
+          echo "BASIC_AUTH=$BASIC_AUTH" >> $GITHUB_ENV
+          echo "Basic Auth configured."
 
       - name: Deploy Elements to Target
         run: |
@@ -416,7 +372,7 @@ jobs:
               result = subprocess.run([
                 'curl', '-s', '-X', 'POST',
                 f'https://$TARGET_URL/services/rest/connect/v1.4/elementManager/{em_type}',
-                '-H', 'Authorization: Session $TARGET_TOKEN',
+                '-H', 'Authorization: Basic $BASIC_AUTH',
                 '-H', 'Content-Type: application/json',
                 '-d', element_data
               ], capture_output=True, text=True)
