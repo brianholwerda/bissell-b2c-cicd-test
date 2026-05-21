@@ -188,11 +188,21 @@ jobs:
             process_models)   EM_TYPE="processModels" ;;
           esac
 
-          # Export element via Element Manager API using Basic Auth
-          EXPORT_RESPONSE=$(curl -s -X GET \
-            "https://$B2C_URL/services/rest/connect/v1.4/elementManager/$EM_TYPE/$ELEMENT_ID" \
-            -H "Authorization: Basic $BASIC_AUTH" \
-            -H "Content-Type: application/json")
+          # Detect if element identifier is an ID (numeric) or name (text)
+          if [[ "$ELEMENT_ID" =~ ^[0-9]+$ ]]; then
+            echo "Numeric ID detected - querying by ID..."
+            EXPORT_RESPONSE=$(curl -s -X GET \
+              "https://$B2C_URL/services/rest/connect/v1.4/elementManager/$EM_TYPE/$ELEMENT_ID" \
+              -H "Authorization: Basic $BASIC_AUTH" \
+              -H "Content-Type: application/json")
+          else
+            echo "Text name detected - querying by name..."
+            ENCODED_ELEMENT_ID=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$ELEMENT_ID'))")
+            EXPORT_RESPONSE=$(curl -s -X GET \
+              "https://$B2C_URL/services/rest/connect/v1.4/elementManager/$EM_TYPE?q=name='$ENCODED_ELEMENT_ID'" \
+              -H "Authorization: Basic $BASIC_AUTH" \
+              -H "Content-Type: application/json")
+          fi
 
           # Check for error in response
           ERROR=$(echo "$EXPORT_RESPONSE" | python3 -c "
