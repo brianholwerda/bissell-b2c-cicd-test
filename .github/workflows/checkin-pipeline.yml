@@ -1,0 +1,342 @@
+name: Check-In Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_environment:
+        description: 'Source Environment'
+        required: true
+        type: choice
+        options:
+          - TST2
+          - TST1
+          - TST3
+      interface:
+        description: 'Interface Name'
+        required: true
+        type: choice
+        options:
+          - bissell
+          - bissell_au
+          - bissell_de
+          - bissell_es
+          - bissell_fr
+          - bissell_it
+          - bissell_nl
+          - bissell_pl
+          - bissell_pt
+          - bissell_se
+          - bissell_uk
+          - interface_12
+      story_number:
+        description: 'ADO Story Number (e.g. ADO-5542)'
+        required: true
+        type: string
+      element_type:
+        description: 'Element Type'
+        required: true
+        type: choice
+        options:
+          - workspaces
+          - reports
+          - navigation_sets
+          - agent_scripts
+          - standard_text
+          - ebr
+          - extensions
+          - scripts
+          - process_models
+          - cp_files
+      element_identifier:
+        description: 'Element Name or ID (for CP files use relative path e.g. dav/cp/..)'
+        required: true
+        type: string
+      checkin_operation:
+        description: 'Operation Type'
+        required: true
+        type: choice
+        options:
+          - ADD
+          - REMOVE
+          - RENAME
+      commit_message:
+        description: 'Commit Message (optional - auto-generated if blank)'
+        required: false
+        type: string
+
+jobs:
+  checkin:
+    name: Check-In Element to Git
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.source_environment }}
+
+    env:
+      SOURCE_ENV: ${{ github.event.inputs.source_environment }}
+      INTERFACE: ${{ github.event.inputs.interface }}
+      STORY_NUMBER: ${{ github.event.inputs.story_number }}
+      ELEMENT_TYPE: ${{ github.event.inputs.element_type }}
+      ELEMENT_ID: ${{ github.event.inputs.element_identifier }}
+      OPERATION: ${{ github.event.inputs.checkin_operation }}
+      COMMIT_MSG: ${{ github.event.inputs.commit_message }}
+
+    steps:
+
+      # -------------------------------------------------------
+      # Step 1 - Validate Inputs
+      # -------------------------------------------------------
+      - name: Validate Inputs
+        run: |
+          echo "=========================================="
+          echo "Check-In Pipeline Starting"
+          echo "=========================================="
+          echo "Source Environment : $SOURCE_ENV"
+          echo "Interface          : $INTERFACE"
+          echo "Story Number       : $STORY_NUMBER"
+          echo "Element Type       : $ELEMENT_TYPE"
+          echo "Element Identifier : $ELEMENT_ID"
+          echo "Operation          : $OPERATION"
+          echo "=========================================="
+
+          # Validate story number format
+          if [[ ! "$STORY_NUMBER" =~ ^ADO-[0-9]+$ ]]; then
+            echo "ERROR: Story number must be in format ADO-XXXX (e.g. ADO-5542)"
+            exit 1
+          fi
+
+          echo "Validation passed."
+
+      # -------------------------------------------------------
+      # Step 2 - Set Environment URL
+      # -------------------------------------------------------
+      - name: Set Environment URL
+        run: |
+          if [ "$SOURCE_ENV" == "TST2" ]; then
+            echo "B2C_URL=bissell--tst2.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "TST1" ]; then
+            echo "B2C_URL=bissell--tst1.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "TST3" ]; then
+            echo "B2C_URL=bissell--tst3.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "PROD" ]; then
+            echo "B2C_URL=support.bissell.com" >> $GITHUB_ENV
+          fi
+
+      # -------------------------------------------------------
+      # Step 3 - Checkout Repository
+      # -------------------------------------------------------
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # -------------------------------------------------------
+      # Step 4 - Setup Story Branch
+      # -------------------------------------------------------
+      - name: Setup Story Branch
+        run: |
+          BRANCH_NAME="story-$STORY_NUMBER"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if story branch already exists
+          if git ls-remote --exit-code --heads origin "$BRANCH_NAME"; then
+            echo "Story branch $BRANCH_NAME already exists - checking out"
+            git checkout "$BRANCH_NAME"
+            git pull origin "$BRANCH_NAME"
+          else
+            echo "Creating new story branch $BRANCH_NAME from tst2"
+            git checkout -b "$BRANCH_NAME"
+          fi
+
+      # -------------------------------------------------------
+      # Step 5 - Authenticate with B2C (SSO Token)
+      # -------------------------------------------------------
+      - name: Authenticate with B2C
+        run: |
+          echo "Authenticating with B2C at $B2C_URL..."
+
+          AUTH_RESPONSE=$(curl -s -X POST \
+            "https://$B2C_URL/services/rest/connect/v1.4/sessions" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"username\": \"${{ secrets.B2C_SITE_LOGIN_USER }}\",
+              \"password\": \"${{ secrets.B2C_SITE_LOGIN_PASS }}\"
+            }")
+
+          # Extract session token
+          SESSION_TOKEN=$(echo "$AUTH_RESPONSE" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          print(data.get('token', ''))
+          ")
+
+          if [ -z "$SESSION_TOKEN" ]; then
+            echo "ERROR: Authentication failed. Check B2C credentials."
+            echo "Response: $AUTH_RESPONSE"
+            exit 1
+          fi
+
+          echo "::add-mask::$SESSION_TOKEN"
+          echo "SESSION_TOKEN=$SESSION_TOKEN" >> $GITHUB_ENV
+          echo "Authentication successful."
+
+      # -------------------------------------------------------
+      # Step 6 - Export Element from B2C (EM Supported Elements)
+      # -------------------------------------------------------
+      - name: Export Element from B2C (EM Elements)
+        if: ${{ github.event.inputs.element_type != 'cp_files' && github.event.inputs.checkin_operation != 'REMOVE' }}
+        run: |
+          echo "Exporting $ELEMENT_TYPE element: $ELEMENT_ID from $B2C_URL..."
+
+          DEST_PATH="customisations/$INTERFACE/$ELEMENT_TYPE"
+          mkdir -p "$DEST_PATH"
+
+          # Map element type to EM API endpoint
+          case "$ELEMENT_TYPE" in
+            workspaces)       EM_TYPE="workspaces" ;;
+            reports)          EM_TYPE="reports" ;;
+            navigation_sets)  EM_TYPE="navigationSets" ;;
+            agent_scripts)    EM_TYPE="agentScripts" ;;
+            standard_text)    EM_TYPE="standardText" ;;
+            ebr)              EM_TYPE="exceptionBasedReporting" ;;
+            extensions)       EM_TYPE="extensions" ;;
+            scripts)          EM_TYPE="scripts" ;;
+            process_models)   EM_TYPE="processModels" ;;
+          esac
+
+          # Export element via Element Manager API
+          EXPORT_RESPONSE=$(curl -s -X GET \
+            "https://$B2C_URL/services/rest/connect/v1.4/elementManager/$EM_TYPE/$ELEMENT_ID" \
+            -H "Authorization: Session $SESSION_TOKEN" \
+            -H "Content-Type: application/json")
+
+          # Save element to file
+          echo "$EXPORT_RESPONSE" > "$DEST_PATH/${ELEMENT_ID}.json"
+
+          if [ $? -ne 0 ]; then
+            echo "ERROR: Failed to export element $ELEMENT_ID"
+            exit 1
+          fi
+
+          echo "Element exported successfully to $DEST_PATH/${ELEMENT_ID}.json"
+
+      # -------------------------------------------------------
+      # Step 7 - Export CP Files via WebDAV
+      # -------------------------------------------------------
+      - name: Export CP Files via WebDAV
+        if: ${{ github.event.inputs.element_type == 'cp_files' && github.event.inputs.checkin_operation != 'REMOVE' }}
+        run: |
+          echo "Exporting CP file: $ELEMENT_ID from $B2C_URL via WebDAV..."
+
+          DEST_PATH="customisations/$INTERFACE/cp_files"
+          mkdir -p "$DEST_PATH"
+
+          # Extract filename from path
+          FILENAME=$(basename "$ELEMENT_ID")
+
+          # Download CP file via WebDAV
+          curl -s -u "${{ secrets.B2C_CP_LOGIN_USER }}:${{ secrets.B2C_CP_LOGIN_PASS }}" \
+            "https://$B2C_URL/$ELEMENT_ID" \
+            -o "$DEST_PATH/$FILENAME"
+
+          if [ $? -ne 0 ]; then
+            echo "ERROR: Failed to export CP file $ELEMENT_ID"
+            exit 1
+          fi
+
+          echo "CP file exported successfully to $DEST_PATH/$FILENAME"
+
+      # -------------------------------------------------------
+      # Step 8 - Handle Remove Operation
+      # -------------------------------------------------------
+      - name: Handle Remove Operation
+        if: ${{ github.event.inputs.checkin_operation == 'REMOVE' }}
+        run: |
+          echo "Removing element: $ELEMENT_ID from story branch..."
+
+          DEST_PATH="customisations/$INTERFACE/$ELEMENT_TYPE"
+
+          if [ "$ELEMENT_TYPE" == "cp_files" ]; then
+            FILENAME=$(basename "$ELEMENT_ID")
+            FILE_PATH="$DEST_PATH/$FILENAME"
+          else
+            FILE_PATH="$DEST_PATH/${ELEMENT_ID}.json"
+          fi
+
+          if [ -f "$FILE_PATH" ]; then
+            git rm "$FILE_PATH"
+            echo "Element removed from repository."
+          else
+            echo "WARNING: File $FILE_PATH not found in repository. Nothing to remove."
+          fi
+
+      # -------------------------------------------------------
+      # Step 9 - Update Story Config
+      # -------------------------------------------------------
+      - name: Update Story Config
+        run: |
+          STORY_CONFIG_PATH="storyReferences/$STORY_NUMBER.json"
+
+          # Create or update story config file
+          if [ -f "$STORY_CONFIG_PATH" ]; then
+            echo "Updating existing story config..."
+            EXISTING=$(cat "$STORY_CONFIG_PATH")
+          else
+            echo "Creating new story config..."
+            EXISTING="{\"story\": \"$STORY_NUMBER\", \"elements\": []}"
+          fi
+
+          # Add element to story config
+          UPDATED=$(echo "$EXISTING" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          element = {
+            'interface': '$INTERFACE',
+            'type': '$ELEMENT_TYPE',
+            'id': '$ELEMENT_ID',
+            'operation': '$OPERATION'
+          }
+          # Avoid duplicates
+          existing_ids = [e['id'] for e in data['elements']]
+          if '$ELEMENT_ID' not in existing_ids:
+            data['elements'].append(element)
+          print(json.dumps(data, indent=2))
+          ")
+
+          echo "$UPDATED" > "$STORY_CONFIG_PATH"
+          echo "Story config updated at $STORY_CONFIG_PATH"
+
+      # -------------------------------------------------------
+      # Step 10 - Commit and Push to Story Branch
+      # -------------------------------------------------------
+      - name: Commit and Push to Story Branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes detected - nothing to commit."
+            exit 0
+          fi
+
+          # Build commit message
+          if [ -z "$COMMIT_MSG" ]; then
+            FINAL_MSG="$STORY_NUMBER: $OPERATION $ELEMENT_TYPE/$ELEMENT_ID on $INTERFACE [$SOURCE_ENV]"
+          else
+            FINAL_MSG="$STORY_NUMBER: $COMMIT_MSG"
+          fi
+
+          git commit -m "$FINAL_MSG"
+          git push origin "$BRANCH_NAME"
+
+          echo "=========================================="
+          echo "Check-In Complete!"
+          echo "Branch  : $BRANCH_NAME"
+          echo "Element : $ELEMENT_TYPE/$ELEMENT_ID"
+          echo "Message : $FINAL_MSG"
+          echo "=========================================="
