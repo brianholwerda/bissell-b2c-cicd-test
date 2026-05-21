@@ -1,0 +1,393 @@
+name: Coded Elements Pipeline
+
+on:
+  push:
+    branches:
+      - 'story-ADO-*'
+    paths:
+      - 'customisations/**/extensions/**'
+      - 'customisations/**/scripts/**'
+      - 'customisations/**/process_models/**'
+      - 'customisations/**/cp_files/**'
+  workflow_dispatch:
+    inputs:
+      story_number:
+        description: 'ADO Story Number (e.g. ADO-5542)'
+        required: true
+        type: string
+      interface:
+        description: 'Interface Name'
+        required: true
+        type: choice
+        options:
+          - bissell
+          - bissell_au
+          - bissell_de
+          - bissell_es
+          - bissell_fr
+          - bissell_it
+          - bissell_nl
+          - bissell_pl
+          - bissell_pt
+          - bissell_se
+          - bissell_uk
+          - interface_12
+      element_type:
+        description: 'Element Type'
+        required: true
+        type: choice
+        options:
+          - extensions
+          - scripts
+          - process_models
+          - cp_files
+      element_identifier:
+        description: 'Element Name or ID'
+        required: true
+        type: string
+      deploy_to_tst2:
+        description: 'Deploy to TST2 after passing checks?'
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  # -------------------------------------------------------
+  # Job 1 - Code Linting
+  # -------------------------------------------------------
+  lint:
+    name: Code Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install ESLint
+        run: npm install eslint --save-dev
+
+      - name: Create ESLint Config
+        run: |
+          cat > .eslintrc.json << 'EOF'
+          {
+            "env": {
+              "browser": true,
+              "es2021": true
+            },
+            "extends": "eslint:recommended",
+            "parserOptions": {
+              "ecmaVersion": "latest",
+              "sourceType": "module"
+            },
+            "rules": {
+              "no-unused-vars": "warn",
+              "no-console": "warn",
+              "eqeqeq": "error",
+              "no-eval": "error",
+              "no-implied-eval": "error"
+            }
+          }
+          EOF
+
+      - name: Run ESLint on JavaScript Files
+        run: |
+          echo "Running ESLint on coded customisation elements..."
+
+          JS_FILES=$(find customisations -name "*.js" -not -path "*/node_modules/*" 2>/dev/null)
+
+          if [ -z "$JS_FILES" ]; then
+            echo "No JavaScript files found to lint."
+          else
+            echo "Files to lint:"
+            echo "$JS_FILES"
+            npx eslint $JS_FILES --format stylish || {
+              echo "ERROR: ESLint found violations. Please fix before deploying."
+              exit 1
+            }
+            echo "ESLint passed successfully."
+          fi
+
+      - name: Check for TypeScript Files
+        id: check_ts
+        run: |
+          TS_FILES=$(find customisations -name "*.ts" -not -path "*/node_modules/*" 2>/dev/null)
+          if [ -n "$TS_FILES" ]; then
+            echo "typescript_found=true" >> $GITHUB_OUTPUT
+            echo "TypeScript files detected - will run TypeScript checks."
+          else
+            echo "typescript_found=false" >> $GITHUB_OUTPUT
+            echo "No TypeScript files found."
+          fi
+
+      - name: Setup TypeScript (if needed)
+        if: steps.check_ts.outputs.typescript_found == 'true'
+        run: |
+          npm install typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin --save-dev
+
+      - name: Run TypeScript Compilation (if needed)
+        if: steps.check_ts.outputs.typescript_found == 'true'
+        run: |
+          echo "Compiling TypeScript files..."
+          npx tsc --noEmit --allowJs --checkJs false || {
+            echo "ERROR: TypeScript compilation failed."
+            exit 1
+          }
+          echo "TypeScript compilation passed."
+
+  # -------------------------------------------------------
+  # Job 2 - Unit Testing
+  # -------------------------------------------------------
+  unit_tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check for Test Files
+        id: check_tests
+        run: |
+          TEST_FILES=$(find customisations -name "*.test.js" -o -name "*.spec.js" 2>/dev/null)
+          if [ -n "$TEST_FILES" ]; then
+            echo "tests_found=true" >> $GITHUB_OUTPUT
+            echo "Test files found:"
+            echo "$TEST_FILES"
+          else
+            echo "tests_found=false" >> $GITHUB_OUTPUT
+            echo "No test files found - skipping unit tests."
+          fi
+
+      - name: Install Jest
+        if: steps.check_tests.outputs.tests_found == 'true'
+        run: npm install jest --save-dev
+
+      - name: Run Unit Tests
+        if: steps.check_tests.outputs.tests_found == 'true'
+        run: |
+          echo "Running unit tests..."
+          npx jest --coverage --coverageThreshold='{"global":{"lines":70}}' || {
+            echo "ERROR: Unit tests failed or coverage threshold not met."
+            exit 1
+          }
+          echo "Unit tests passed."
+
+      - name: Skip Unit Tests Notice
+        if: steps.check_tests.outputs.tests_found == 'false'
+        run: |
+          echo "=========================================="
+          echo "NOTICE: No unit test files found."
+          echo "Consider adding tests for your customisations."
+          echo "Test files should be named *.test.js or *.spec.js"
+          echo "=========================================="
+
+  # -------------------------------------------------------
+  # Job 3 - Static Code Analysis (SonarQube)
+  # -------------------------------------------------------
+  static_analysis:
+    name: Static Code Analysis
+    runs-on: ubuntu-latest
+    needs: unit_tests
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check for SonarQube Configuration
+        id: check_sonar
+        run: |
+          if [ -n "${{ secrets.SONAR_TOKEN }}" ] && [ -n "${{ secrets.SONAR_HOST_URL }}" ]; then
+            echo "sonar_configured=true" >> $GITHUB_OUTPUT
+            echo "SonarQube configured - running analysis."
+          else
+            echo "sonar_configured=false" >> $GITHUB_OUTPUT
+            echo "SonarQube not configured - skipping analysis."
+          fi
+
+      - name: Run SonarQube Analysis
+        if: steps.check_sonar.outputs.sonar_configured == 'true'
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: Skip SonarQube Notice
+        if: steps.check_sonar.outputs.sonar_configured == 'false'
+        run: |
+          echo "=========================================="
+          echo "NOTICE: SonarQube analysis skipped."
+          echo "To enable, add SONAR_TOKEN and SONAR_HOST_URL"
+          echo "to your GitHub Secrets."
+          echo "=========================================="
+
+  # -------------------------------------------------------
+  # Job 4 - Deploy to TST2
+  # -------------------------------------------------------
+  deploy_to_tst2:
+    name: Deploy to TST2
+    runs-on: ubuntu-latest
+    needs: static_analysis
+    environment: TST2
+    if: ${{ github.event.inputs.deploy_to_tst2 != 'false' }}
+
+    env:
+      B2C_URL: bissell--tst2.custhelp.com
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate with B2C TST2
+        run: |
+          echo "Authenticating with B2C TST2..."
+
+          AUTH_RESPONSE=$(curl -s -X POST \
+            "https://$B2C_URL/services/rest/connect/v1.4/sessions" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"username\": \"${{ secrets.B2C_SITE_LOGIN_USER }}\",
+              \"password\": \"${{ secrets.B2C_SITE_LOGIN_PASS }}\"
+            }")
+
+          SESSION_TOKEN=$(echo "$AUTH_RESPONSE" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          print(data.get('token', ''))
+          ")
+
+          if [ -z "$SESSION_TOKEN" ]; then
+            echo "ERROR: Authentication failed."
+            exit 1
+          fi
+
+          echo "::add-mask::$SESSION_TOKEN"
+          echo "SESSION_TOKEN=$SESSION_TOKEN" >> $GITHUB_ENV
+          echo "Authentication successful."
+
+      - name: Deploy Extensions to TST2
+        run: |
+          echo "Deploying extensions to TST2..."
+
+          for INTERFACE_DIR in customisations/*/; do
+            INTERFACE=$(basename "$INTERFACE_DIR")
+            EXT_DIR="$INTERFACE_DIR/extensions"
+
+            if [ -d "$EXT_DIR" ]; then
+              for EXT_FILE in "$EXT_DIR"/*.js "$EXT_DIR"/*.json; do
+                [ -f "$EXT_FILE" ] || continue
+                FILENAME=$(basename "$EXT_FILE")
+                echo "Deploying extension: $FILENAME for interface: $INTERFACE"
+
+                curl -s -X POST \
+                  "https://$B2C_URL/services/rest/connect/v1.4/elementManager/extensions" \
+                  -H "Authorization: Session $SESSION_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d @"$EXT_FILE" || {
+                    echo "ERROR: Failed to deploy $FILENAME"
+                    exit 1
+                  }
+              done
+            fi
+          done
+
+          echo "Extensions deployed successfully."
+
+      - name: Deploy Scripts to TST2
+        run: |
+          echo "Deploying scripts to TST2..."
+
+          for INTERFACE_DIR in customisations/*/; do
+            INTERFACE=$(basename "$INTERFACE_DIR")
+            SCRIPTS_DIR="$INTERFACE_DIR/scripts"
+
+            if [ -d "$SCRIPTS_DIR" ]; then
+              for SCRIPT_FILE in "$SCRIPTS_DIR"/*.js "$SCRIPTS_DIR"/*.json; do
+                [ -f "$SCRIPT_FILE" ] || continue
+                FILENAME=$(basename "$SCRIPT_FILE")
+                echo "Deploying script: $FILENAME for interface: $INTERFACE"
+
+                curl -s -X POST \
+                  "https://$B2C_URL/services/rest/connect/v1.4/elementManager/scripts" \
+                  -H "Authorization: Session $SESSION_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d @"$SCRIPT_FILE" || {
+                    echo "ERROR: Failed to deploy $FILENAME"
+                    exit 1
+                  }
+              done
+            fi
+          done
+
+          echo "Scripts deployed successfully."
+
+      - name: Deploy CP Files to TST2 via WebDAV
+        run: |
+          echo "Deploying CP files to TST2 via WebDAV..."
+
+          for INTERFACE_DIR in customisations/*/; do
+            INTERFACE=$(basename "$INTERFACE_DIR")
+            CP_DIR="$INTERFACE_DIR/cp_files"
+
+            if [ -d "$CP_DIR" ]; then
+              for CP_FILE in "$CP_DIR"/*; do
+                [ -f "$CP_FILE" ] || continue
+                FILENAME=$(basename "$CP_FILE")
+                echo "Deploying CP file: $FILENAME for interface: $INTERFACE"
+
+                curl -s -T "$CP_FILE" \
+                  -u "${{ secrets.B2C_CP_LOGIN_USER }}:${{ secrets.B2C_CP_LOGIN_PASS }}" \
+                  "https://$B2C_URL/dav/cp/customer/development/controllers/$FILENAME" || {
+                    echo "ERROR: Failed to deploy CP file $FILENAME"
+                    exit 1
+                  }
+              done
+            fi
+          done
+
+          echo "CP files deployed successfully."
+
+      - name: Deployment Summary
+        run: |
+          echo "=========================================="
+          echo "Deployment to TST2 Complete!"
+          echo "Environment : TST2 ($B2C_URL)"
+          echo "Timestamp   : $(date -u)"
+          echo "=========================================="
+
+  # -------------------------------------------------------
+  # Job 5 - Rollback (runs only if deploy fails)
+  # -------------------------------------------------------
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: deploy_to_tst2
+    environment: TST2
+    if: failure()
+
+    env:
+      B2C_URL: bissell--tst2.custhelp.com
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Notify Rollback Required
+        run: |
+          echo "=========================================="
+          echo "WARNING: Deployment to TST2 failed!"
+          echo "A manual rollback may be required."
+          echo "Please check the deployment logs above"
+          echo "and restore the previous version manually"
+          echo "if any elements were partially deployed."
+          echo "=========================================="
