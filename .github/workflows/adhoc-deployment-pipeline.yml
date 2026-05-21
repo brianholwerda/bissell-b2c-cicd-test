@@ -202,32 +202,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Authenticate with Source B2C
+      - name: Set Basic Auth Header
         run: |
-          echo "Authenticating with source B2C at $SOURCE_URL..."
+          echo "Setting up Basic Auth..."
 
-          AUTH_RESPONSE=$(curl -s -X POST \
-            "https://$SOURCE_URL/services/rest/connect/v1.4/sessions" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"username\": \"${{ secrets.B2C_SITE_LOGIN_USER }}\",
-              \"password\": \"${{ secrets.B2C_SITE_LOGIN_PASS }}\"
-            }")
+          BASIC_AUTH=$(echo -n "${{ secrets.B2C_SITE_LOGIN_USER }}:${{ secrets.B2C_SITE_LOGIN_PASS }}" | base64 -w 0)
 
-          SOURCE_TOKEN=$(echo "$AUTH_RESPONSE" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          print(data.get('token', ''))
-          ")
-
-          if [ -z "$SOURCE_TOKEN" ]; then
-            echo "ERROR: Source authentication failed."
-            exit 1
-          fi
-
-          echo "::add-mask::$SOURCE_TOKEN"
-          echo "SOURCE_TOKEN=$SOURCE_TOKEN" >> $GITHUB_ENV
-          echo "Authentication successful."
+          echo "::add-mask::$BASIC_AUTH"
+          echo "BASIC_AUTH=$BASIC_AUTH" >> $GITHUB_ENV
+          echo "Basic Auth configured."
 
       - name: Find and Export Elements
         id: find_elements
@@ -272,7 +255,7 @@ jobs:
               # Export by ID or name
               EXPORT_RESPONSE=$(curl -s -X GET \
                 "https://$SOURCE_URL/services/rest/connect/v1.4/elementManager/$EM_TYPE?q=name='$ELEMENT_ID'" \
-                -H "Authorization: Session $SOURCE_TOKEN")
+                -H "Authorization: Basic $BASIC_AUTH")
 
               echo "$EXPORT_RESPONSE" > "$EXPORT_DIR/${ELEMENT_ID}.json"
               echo "Element exported: $ELEMENT_ID"
@@ -285,7 +268,7 @@ jobs:
 
               EXPORT_RESPONSE=$(curl -s -X GET \
                 "https://$SOURCE_URL/services/rest/connect/v1.4/elementManager/$EM_TYPE?q=$DATE_FILTER" \
-                -H "Authorization: Session $SOURCE_TOKEN")
+                -H "Authorization: Basic $BASIC_AUTH")
 
               echo "$EXPORT_RESPONSE" > "$EXPORT_DIR/date_range_export.json"
               echo "Elements exported by date range: $FROM_DATE to $TO_DATE"
@@ -438,29 +421,15 @@ jobs:
           name: export-staging-${{ github.run_number }}
           path: export_staging/
 
-      - name: Authenticate with Target B2C
+      - name: Set Basic Auth Header
         run: |
-          AUTH_RESPONSE=$(curl -s -X POST \
-            "https://$TARGET_URL/services/rest/connect/v1.4/sessions" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"username\": \"${{ secrets.B2C_SITE_LOGIN_USER }}\",
-              \"password\": \"${{ secrets.B2C_SITE_LOGIN_PASS }}\"
-            }")
+          echo "Setting up Basic Auth..."
 
-          TARGET_TOKEN=$(echo "$AUTH_RESPONSE" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          print(data.get('token', ''))
-          ")
+          BASIC_AUTH=$(echo -n "${{ secrets.B2C_SITE_LOGIN_USER }}:${{ secrets.B2C_SITE_LOGIN_PASS }}" | base64 -w 0)
 
-          if [ -z "$TARGET_TOKEN" ]; then
-            echo "ERROR: Target authentication failed."
-            exit 1
-          fi
-
-          echo "::add-mask::$TARGET_TOKEN"
-          echo "TARGET_TOKEN=$TARGET_TOKEN" >> $GITHUB_ENV
+          echo "::add-mask::$BASIC_AUTH"
+          echo "BASIC_AUTH=$BASIC_AUTH" >> $GITHUB_ENV
+          echo "Basic Auth configured."
 
       - name: Deploy Elements to Target Interface(s)
         run: |
