@@ -151,36 +151,18 @@ jobs:
           fi
 
       # -------------------------------------------------------
-      # Step 5 - Authenticate with B2C (SSO Token)
+      # Step 5 - Set Basic Auth Header
       # -------------------------------------------------------
-      - name: Authenticate with B2C
+      - name: Set Basic Auth Header
         run: |
-          echo "Authenticating with B2C at $B2C_URL..."
+          echo "Setting up Basic Auth for B2C at $B2C_URL..."
 
-          AUTH_RESPONSE=$(curl -s -X POST \
-            "https://$B2C_URL/services/rest/connect/v1.4/sessions" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"username\": \"${{ secrets.B2C_SITE_LOGIN_USER }}\",
-              \"password\": \"${{ secrets.B2C_SITE_LOGIN_PASS }}\"
-            }")
+          # Encode credentials as base64
+          BASIC_AUTH=$(echo -n "${{ secrets.B2C_SITE_LOGIN_USER }}:${{ secrets.B2C_SITE_LOGIN_PASS }}" | base64 -w 0)
 
-          # Extract session token
-          SESSION_TOKEN=$(echo "$AUTH_RESPONSE" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          print(data.get('token', ''))
-          ")
-
-          if [ -z "$SESSION_TOKEN" ]; then
-            echo "ERROR: Authentication failed. Check B2C credentials."
-            echo "Response: $AUTH_RESPONSE"
-            exit 1
-          fi
-
-          echo "::add-mask::$SESSION_TOKEN"
-          echo "SESSION_TOKEN=$SESSION_TOKEN" >> $GITHUB_ENV
-          echo "Authentication successful."
+          echo "::add-mask::$BASIC_AUTH"
+          echo "BASIC_AUTH=$BASIC_AUTH" >> $GITHUB_ENV
+          echo "Basic Auth configured."
 
       # -------------------------------------------------------
       # Step 6 - Export Element from B2C (EM Supported Elements)
@@ -206,20 +188,27 @@ jobs:
             process_models)   EM_TYPE="processModels" ;;
           esac
 
-          # Export element via Element Manager API
+          # Export element via Element Manager API using Basic Auth
           EXPORT_RESPONSE=$(curl -s -X GET \
             "https://$B2C_URL/services/rest/connect/v1.4/elementManager/$EM_TYPE/$ELEMENT_ID" \
-            -H "Authorization: Session $SESSION_TOKEN" \
+            -H "Authorization: Basic $BASIC_AUTH" \
             -H "Content-Type: application/json")
 
-          # Save element to file
-          echo "$EXPORT_RESPONSE" > "$DEST_PATH/${ELEMENT_ID}.json"
+          # Check for error in response
+          ERROR=$(echo "$EXPORT_RESPONSE" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          print(data.get('error', ''))
+          " 2>/dev/null || echo "")
 
-          if [ $? -ne 0 ]; then
+          if [ -n "$ERROR" ]; then
             echo "ERROR: Failed to export element $ELEMENT_ID"
+            echo "Response: $EXPORT_RESPONSE"
             exit 1
           fi
 
+          # Save element to file
+          echo "$EXPORT_RESPONSE" > "$DEST_PATH/${ELEMENT_ID}.json"
           echo "Element exported successfully to $DEST_PATH/${ELEMENT_ID}.json"
 
       # -------------------------------------------------------
