@@ -28,11 +28,6 @@ on:
         required: true
         type: boolean
         default: false
-      skip_dependent_objects:
-        description: 'Skip Dependent Custom Objects?'
-        required: true
-        type: boolean
-        default: false
 
 jobs:
   # -------------------------------------------------------
@@ -65,7 +60,6 @@ jobs:
           echo "Target : $TARGET"
           echo "=========================================="
 
-          # Prevent invalid promotions
           if [ "$SOURCE" == "$TARGET" ]; then
             echo "ERROR: Source and target environments cannot be the same."
             exit 1
@@ -160,12 +154,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Generate Diff Between Source and Target Branches
+      - name: Generate Diff Report
         run: |
           SOURCE_BRANCH="${{ needs.validate.outputs.source_branch }}"
           TARGET_BRANCH="${{ needs.validate.outputs.target_branch }}"
@@ -175,18 +164,12 @@ jobs:
 
           git fetch origin "$SOURCE_BRANCH" "$TARGET_BRANCH"
 
-          # Generate diff for each story
-          IFS=',' read -ra STORY_ARRAY <<< "$STORIES"
-
           DIFF_CONTENT="<html><head><title>Diff Report</title>"
           DIFF_CONTENT+="<style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { color: #333; }
             h2 { color: #666; border-bottom: 1px solid #ccc; }
             h3 { color: #999; }
-            .added { background-color: #e6ffed; color: #24292e; }
-            .removed { background-color: #ffeef0; color: #24292e; }
-            .unchanged { background-color: #fff; color: #24292e; }
             pre { background: #f6f8fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
             .summary { background: #f1f8ff; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
           </style></head><body>"
@@ -199,32 +182,39 @@ jobs:
           DIFF_CONTENT+="<p><strong>Generated:</strong> $(date -u)</p>"
           DIFF_CONTENT+="</div>"
 
+          IFS=',' read -ra STORY_ARRAY <<< "$STORIES"
           for STORY in "${STORY_ARRAY[@]}"; do
             STORY=$(echo "$STORY" | tr -d ' ')
-            STORY_BRANCH="story-$STORY"
             DIFF_CONTENT+="<h2>Story: $STORY</h2>"
 
-            # Get list of changed files for this story
-            CHANGED_FILES=$(git diff --name-only "origin/$TARGET_BRANCH" "origin/$SOURCE_BRANCH" -- "customisations/" 2>/dev/null || echo "")
+            STORY_CONFIG="storyReferences/$STORY.json"
+            if [ ! -f "$STORY_CONFIG" ]; then
+              DIFF_CONTENT+="<p>No story config found for $STORY</p>"
+              continue
+            fi
 
-            if [ -z "$CHANGED_FILES" ]; then
-              DIFF_CONTENT+="<p>No changes detected for this story.</p>"
-            else
-              while IFS= read -r FILE; do
-                DIFF_CONTENT+="<h3>$FILE</h3><pre>"
-                FILE_DIFF=$(git diff "origin/$TARGET_BRANCH" "origin/$SOURCE_BRANCH" -- "$FILE" 2>/dev/null || echo "Unable to generate diff")
-                DIFF_CONTENT+=$(echo "$FILE_DIFF" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
-                DIFF_CONTENT+="</pre>"
-              done <<< "$CHANGED_FILES"
+            # List elements in story
+            ELEMENTS=$(python3 -c "
+          import json
+          with open('$STORY_CONFIG') as f:
+            data = json.load(f)
+          for e in data.get('elements', []):
+            print(f\"  {e['interface']}/{e['type']}/{e['id']} - {e['name']}\")
+            ")
+            DIFF_CONTENT+="<h3>Elements to be deployed:</h3><pre>$ELEMENTS</pre>"
+
+            # Show file diffs
+            CHANGED_FILES=$(git diff --name-only "origin/$TARGET_BRANCH" "origin/$SOURCE_BRANCH" -- "customisations/" "storyReferences/$STORY.json" 2>/dev/null || echo "")
+            if [ -n "$CHANGED_FILES" ]; then
+              DIFF_CONTENT+="<h3>Changed files:</h3><pre>$CHANGED_FILES</pre>"
             fi
           done
 
           DIFF_CONTENT+="</body></html>"
-
           echo "$DIFF_CONTENT" > diff_report.html
-          echo "Diff report generated successfully."
+          echo "Diff report generated."
 
-      - name: Upload Diff Report as Artifact
+      - name: Upload Diff Report
         uses: actions/upload-artifact@v4
         with:
           name: diff-report-${{ github.run_number }}
@@ -236,9 +226,8 @@ jobs:
           echo "=========================================="
           echo "DIFF REPORT READY FOR REVIEW"
           echo "=========================================="
-          echo "Download the diff report artifact from:"
+          echo "Download from:"
           echo "Actions > This Run > Artifacts > diff-report-${{ github.run_number }}"
-          echo ""
           echo "Review all changes before proceeding."
           echo "=========================================="
 
@@ -271,10 +260,9 @@ jobs:
     if: always() && (needs.approval.result == 'success' || github.event.inputs.skip_diff_review == 'true')
 
     env:
-      SOURCE_URL: ${{ needs.validate.outputs.source_url }}
       TARGET_URL: ${{ needs.validate.outputs.target_url }}
-      SOURCE_BRANCH: ${{ needs.validate.outputs.source_branch }}
       TARGET_BRANCH: ${{ needs.validate.outputs.target_branch }}
+      SOURCE_BRANCH: ${{ needs.validate.outputs.source_branch }}
       STORY_LIST: ${{ needs.validate.outputs.story_list }}
 
     steps:
@@ -282,113 +270,176 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set Basic Auth Header
+      - name: Install Dependencies
+        run: pip install PyJWT cryptography --quiet
+
+      - name: Generate JWT and Get USERSESSION Token
         run: |
-          echo "Setting up Basic Auth..."
+          python3 << 'PYEOF'
+          import jwt
+          import time
+          import json
+          import urllib.request
+          import os
 
-          BASIC_AUTH=$(echo -n "${{ secrets.B2C_SITE_LOGIN_USER }}:${{ secrets.B2C_SITE_LOGIN_PASS }}" | base64 -w 0)
+          private_key = """${{ secrets.B2C_PRIVATE_KEY }}"""
+          b2c_url = os.environ["TARGET_URL"]
 
-          echo "::add-mask::$BASIC_AUTH"
-          echo "BASIC_AUTH=$BASIC_AUTH" >> $GITHUB_ENV
-          echo "Basic Auth configured."
+          now = int(time.time())
+          payload = {
+            "sub": "cicd_service",
+            "iss": "emPublicApi",
+            "exp": now + 3600,
+            "jti": f"s{now}",
+            "aud": "/authToken"
+          }
 
-      - name: Deploy Elements to Target
-        run: |
-          echo "Deploying stories to ${{ github.event.inputs.target_environment }}..."
+          token = jwt.encode(payload, private_key, algorithm="RS256")
 
-          IFS=',' read -ra STORY_ARRAY <<< "$STORY_LIST"
+          auth_url = f"https://{b2c_url}/AgentWeb/api/elementmanager/authentication/authToken"
+          interface_url = f"https://{b2c_url}/cgi-bin/bissell.cfg"
 
-          for STORY in "${STORY_ARRAY[@]}"; do
-            STORY=$(echo "$STORY" | tr -d ' ')
-            echo "----------------------------------------"
-            echo "Processing story: $STORY"
-            echo "----------------------------------------"
+          req = urllib.request.Request(auth_url, method="POST")
+          req.add_header("Authorization", f"Bearer {token}")
+          req.add_header("interfaceUrl", interface_url)
 
-            STORY_CONFIG="storyReferences/$STORY.json"
+          with urllib.request.urlopen(req) as resp:
+            auth_data = json.loads(resp.read().decode())
 
-            if [ ! -f "$STORY_CONFIG" ]; then
-              echo "WARNING: No story config found for $STORY - skipping."
-              continue
-            fi
+          usersession = auth_data.get("token")
+          if not usersession:
+            print(f"ERROR: Failed to get USERSESSION token: {auth_data}")
+            exit(1)
 
-            # Read elements from story config
-            python3 << PYEOF
-          import json, subprocess, sys
+          print("USERSESSION token obtained successfully.")
 
-          with open('$STORY_CONFIG') as f:
-            story = json.load(f)
-
-          elements = story.get('elements', [])
-          print(f"Found {len(elements)} elements for story $STORY")
-
-          for element in elements:
-            interface = element['interface']
-            elem_type = element['type']
-            elem_id = element['id']
-            operation = element.get('operation', 'ADD')
-
-            print(f"  Deploying: {interface}/{elem_type}/{elem_id} ({operation})")
-
-            # Map element type to EM API endpoint
-            em_type_map = {
-              'workspaces': 'workspaces',
-              'reports': 'reports',
-              'navigation_sets': 'navigationSets',
-              'agent_scripts': 'agentScripts',
-              'standard_text': 'standardText',
-              'ebr': 'exceptionBasedReporting',
-              'extensions': 'extensions',
-              'scripts': 'scripts',
-              'process_models': 'processModels'
-            }
-
-            if elem_type == 'cp_files':
-              # WebDAV deployment for CP files
-              file_path = f"customisations/{interface}/cp_files/{elem_id}"
-              result = subprocess.run([
-                'curl', '-s', '-T', file_path,
-                '-u', '${{ secrets.B2C_CP_LOGIN_USER }}:${{ secrets.B2C_CP_LOGIN_PASS }}',
-                f'https://$TARGET_URL/dav/cp/customer/development/controllers/{elem_id}'
-              ], capture_output=True, text=True)
-              if result.returncode != 0:
-                print(f"  ERROR: Failed to deploy CP file {elem_id}")
-                sys.exit(1)
-            else:
-              em_type = em_type_map.get(elem_type)
-              if not em_type:
-                print(f"  WARNING: Unknown element type {elem_type} - skipping")
-                continue
-
-              # EM API deployment
-              file_path = f"customisations/{interface}/{elem_type}/{elem_id}.json"
-              if not __import__('os').path.exists(file_path):
-                print(f"  WARNING: File not found {file_path} - skipping")
-                continue
-
-              with open(file_path) as f:
-                element_data = f.read()
-
-              result = subprocess.run([
-                'curl', '-s', '-X', 'POST',
-                f'https://$TARGET_URL/services/rest/connect/v1.4/elementManager/{em_type}',
-                '-H', 'Authorization: Basic $BASIC_AUTH',
-                '-H', 'Content-Type: application/json',
-                '-H', 'OSvC-CREST-Application-Context: cicd-pipeline',
-                '-d', element_data
-              ], capture_output=True, text=True)
-
-              if result.returncode != 0:
-                print(f"  ERROR: Failed to deploy {elem_id}")
-                sys.exit(1)
-
-            print(f"  Successfully deployed: {elem_id}")
-
-          print(f"Story $STORY deployment complete.")
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+            f.write(f"USERSESSION={usersession}\n")
           PYEOF
-          done
 
-          echo "All stories deployed successfully."
+      - name: Deploy Stories to Target
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import time
+          import base64
+          import urllib.request
+          import urllib.error
+          import os
+
+          target_url = os.environ["TARGET_URL"]
+          usersession = os.environ["USERSESSION"]
+          story_list = os.environ["STORY_LIST"]
+          stories = [s.strip() for s in story_list.split(",")]
+
+          base_url = f"https://{target_url}/AgentWeb/api/elementmanager"
+
+          def em_request(url, method="GET", body=None):
+            req = urllib.request.Request(url, method=method)
+            req.add_header("USERSESSION", usersession)
+            req.add_header("Content-Type", "application/json")
+            if body:
+              req.data = json.dumps(body).encode()
+            with urllib.request.urlopen(req) as resp:
+              return json.loads(resp.read().decode())
+
+          def poll_status(url, complete_code, error_codes, max_attempts=60):
+            for attempt in range(max_attempts):
+              time.sleep(5)
+              resp = em_request(url)
+              code = resp.get("status", {}).get("code")
+              desc = resp.get("status", {}).get("description")
+              print(f"  Status: {desc} (code: {code})")
+              if code == complete_code:
+                return resp
+              if code in error_codes:
+                print(f"ERROR: Operation failed with status: {desc}")
+                exit(1)
+            print("ERROR: Operation timed out")
+            exit(1)
+
+          for story in stories:
+            print(f"==========================================")
+            print(f"Processing story: {story}")
+            print(f"==========================================")
+
+            story_config_path = f"storyReferences/{story}.json"
+            if not os.path.exists(story_config_path):
+              print(f"WARNING: No story config found for {story} - skipping.")
+              continue
+
+            with open(story_config_path) as f:
+              story_data = json.load(f)
+
+            elements = story_data.get("elements", [])
+            print(f"Found {len(elements)} elements for story {story}")
+
+            for element in elements:
+              elem_type = element["type"]
+              elem_id = element["id"]
+              elem_name = element["name"]
+              zip_path = element["zipPath"]
+
+              print(f"  Deploying: {elem_type}/{elem_id} ({elem_name})")
+
+              if not os.path.exists(zip_path):
+                print(f"  ERROR: ZIP file not found at {zip_path}")
+                exit(1)
+
+              # Read and base64 encode the ZIP
+              with open(zip_path, "rb") as f:
+                zip_content = base64.b64encode(f.read()).decode()
+
+              # Step 1 - Create import package
+              import_body = {
+                "name": f"{story}_{elem_type}_{elem_id}",
+                "packageContent": zip_content
+              }
+
+              import_resp = em_request(
+                f"{base_url}/import/EMPackages",
+                method="POST",
+                body=import_body
+              )
+              import_id = import_resp.get("id")
+              print(f"  Import package created with ID: {import_id}")
+
+              # Step 2 - Poll until prescan complete
+              print("  Polling prescan status...")
+              poll_status(
+                f"{base_url}/import/EMPackages/{import_id}",
+                complete_code="5",
+                error_codes=["6", "7"]
+              )
+              print("  Prescan complete.")
+
+              # Step 3 - Trigger import
+              patch_body = {
+                "action": "import",
+                "id": str(import_id)
+              }
+              em_request(
+                f"{base_url}/import/EMPackages",
+                method="PATCH",
+                body=patch_body
+              )
+              print("  Import triggered.")
+
+              # Step 4 - Poll until import complete
+              print("  Polling import status...")
+              poll_status(
+                f"{base_url}/import/EMPackages/{import_id}",
+                complete_code="10",
+                error_codes=["11", "12", "20"]
+              )
+              print(f"  Successfully deployed: {elem_type}/{elem_id} ({elem_name})")
+
+          print("==========================================")
+          print("All stories deployed successfully!")
+          print("==========================================")
+          PYEOF
 
       - name: Update Target Branch in Git
         run: |
@@ -397,6 +448,7 @@ jobs:
 
           git fetch origin
           git checkout "$TARGET_BRANCH"
+          git pull origin "$TARGET_BRANCH"
           git merge "origin/$SOURCE_BRANCH" --no-ff \
             -m "Deploy stories [$STORY_LIST] from ${{ github.event.inputs.source_environment }} to ${{ github.event.inputs.target_environment }} [$(date -u)]"
           git push origin "$TARGET_BRANCH"
@@ -407,10 +459,10 @@ jobs:
         run: |
           echo "=========================================="
           echo "Story Deployment Complete!"
-          echo "Source      : ${{ github.event.inputs.source_environment }}"
-          echo "Target      : ${{ github.event.inputs.target_environment }}"
-          echo "Stories     : $STORY_LIST"
-          echo "Timestamp   : $(date -u)"
+          echo "Source    : ${{ github.event.inputs.source_environment }}"
+          echo "Target    : ${{ github.event.inputs.target_environment }}"
+          echo "Stories   : $STORY_LIST"
+          echo "Timestamp : $(date -u)"
           echo "=========================================="
 
   # -------------------------------------------------------
@@ -431,7 +483,5 @@ jobs:
           echo "Stories            : ${{ needs.validate.outputs.story_list }}"
           echo ""
           echo "Please review the deployment logs above."
-          echo "Manual intervention may be required to"
-          echo "restore the target environment to its"
-          echo "previous state."
+          echo "Manual intervention may be required."
           echo "=========================================="
