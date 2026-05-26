@@ -221,8 +221,8 @@ jobs:
             echo "B2C_DE_URL=bissell-de--tst3.custhelp.com" >> $GITHUB_ENV
           elif [ "$SOURCE_ENV" == "PROD" ]; then
             echo "B2C_URL=support.bissell.com" >> $GITHUB_ENV
-            echo "B2C_UK_URL=bissell-uk.support.bissell.com" >> $GITHUB_ENV
-            echo "B2C_DE_URL=bissell-de.support.bissell.com" >> $GITHUB_ENV
+            echo "B2C_UK_URL=support.bissell.co.uk" >> $GITHUB_ENV
+            echo "B2C_DE_URL=support.bissell.de" >> $GITHUB_ENV
           fi
 
       - name: Setup Story Branch
@@ -561,8 +561,8 @@ jobs:
             echo "B2C_DE_URL=bissell-de--tst3.custhelp.com" >> $GITHUB_ENV
           elif [ "$SOURCE_ENV" == "PROD" ]; then
             echo "B2C_URL=support.bissell.com" >> $GITHUB_ENV
-            echo "B2C_UK_URL=bissell-uk.support.bissell.com" >> $GITHUB_ENV
-            echo "B2C_DE_URL=bissell-de.support.bissell.com" >> $GITHUB_ENV
+            echo "B2C_UK_URL=support.bissell.co.uk" >> $GITHUB_ENV
+            echo "B2C_DE_URL=support.bissell.de" >> $GITHUB_ENV
           fi
 
       - name: Install Dependencies
