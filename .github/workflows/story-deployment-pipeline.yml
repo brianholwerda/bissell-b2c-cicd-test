@@ -348,7 +348,11 @@ jobs:
           def poll_status(url, complete_code, error_codes, max_attempts=60):
             for attempt in range(max_attempts):
               time.sleep(5)
-              resp = em_request(url)
+              try:
+                resp = em_request(url)
+              except Exception as e:
+                print(f"  WARNING: Poll attempt {attempt + 1} failed with error: {e} - retrying...")
+                continue
               code = resp.get("status", {}).get("code")
               desc = resp.get("status", {}).get("description")
               print(f"  Status: {desc} (code: {code})")
@@ -356,6 +360,7 @@ jobs:
                 return resp
               if code in error_codes:
                 print(f"ERROR: Operation failed with status: {desc}")
+                print(f"Full response: {json.dumps(resp, indent=2)}")
                 exit(1)
             print("ERROR: Operation timed out")
             exit(1)
