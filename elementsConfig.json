@@ -1,0 +1,184 @@
+{
+  "interfaces": {
+    "bissell": {
+      "description": "Bissell Main Interface",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    },
+    "bissell_au": {
+      "description": "Bissell Australia Interface",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    },
+    "bissell_de": {
+      "description": "Bissell Germany Interface",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    },
+    "bissell_es": {
+      "description": "Bissell Spain Interface",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    },
+    "bissell_fr": {
+      "description": "Bissell France Interface",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    },
+    "bissell_it": {
+      "description": "Bissell Italy Interface",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    },
+    "bissell_nl": {
+      "description": "Bissell Netherlands Interface",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    },
+    "bissell_pl": {
+      "description": "Bissell Poland Interface",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    },
+    "bissell_pt": {
+      "description": "Bissell Portugal Interface",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    },
+    "bissell_se": {
+      "description": "Bissell Sweden Interface",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    },
+    "bissell_uk": {
+      "description": "Bissell United Kingdom Interface",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    },
+    "interface_12": {
+      "description": "Placeholder - Rename when interface is ready",
+      "elements": {
+        "extensions": [],
+        "scripts": [],
+        "cp_files": [],
+        "process_models": [],
+        "workspaces": [],
+        "reports": [],
+        "navigation_sets": [],
+        "agent_scripts": [],
+        "standard_text": [],
+        "ebr": []
+      }
+    }
+  }
+}

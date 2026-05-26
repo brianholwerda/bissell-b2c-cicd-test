@@ -1,0 +1,57 @@
+{
+  "environments": {
+    "TST2": {
+      "url": "bissell--tst2.custhelp.com",
+      "description": "Development Environment",
+      "stories": []
+    },
+    "TST1": {
+      "url": "bissell--tst1.custhelp.com",
+      "description": "Test Environment",
+      "stories": []
+    },
+    "TST3": {
+      "url": "bissell--tst3.custhelp.com",
+      "description": "Training Environment",
+      "stories": []
+    },
+    "PROD": {
+      "url": "support.bissell.com",
+      "description": "Production Environment",
+      "stories": []
+    }
+  },
+  "interfaces": [
+    "bissell",
+    "bissell_au",
+    "bissell_de",
+    "bissell_es",
+    "bissell_fr",
+    "bissell_it",
+    "bissell_nl",
+    "bissell_pl",
+    "bissell_pt",
+    "bissell_se",
+    "bissell_uk",
+    "interface_12"
+  ],
+  "elementTypes": [
+    "extensions",
+    "scripts",
+    "cp_files",
+    "process_models",
+    "workspaces",
+    "reports",
+    "navigation_sets",
+    "agent_scripts",
+    "standard_text",
+    "ebr"
+  ],
+  "storyPrefix": "ADO",
+  "branchStrategy": {
+    "development": "tst2",
+    "test": "tst1",
+    "training": "tst3",
+    "production": "main"
+  }
+}

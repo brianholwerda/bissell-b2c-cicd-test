@@ -1,0 +1,402 @@
+name: Check-In Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_environment:
+        description: 'Source Environment'
+        required: true
+        type: choice
+        options:
+          - TST2
+          - TST1
+          - TST3
+      interface:
+        description: 'Interface Name'
+        required: true
+        type: choice
+        options:
+          - bissell
+          - bissell_au
+          - bissell_de
+          - bissell_es
+          - bissell_fr
+          - bissell_it
+          - bissell_nl
+          - bissell_pl
+          - bissell_pt
+          - bissell_se
+          - bissell_uk
+          - interface_12
+      story_number:
+        description: 'ADO Story Number (e.g. ADO-5542)'
+        required: true
+        type: string
+      element_type:
+        description: 'Element Type'
+        required: true
+        type: choice
+        options:
+          - Workspace
+          - Report
+          - NavigationSet
+          - AgentScript
+          - StandardText
+          - BusinessRule
+      element_id:
+        description: 'Element ID (numeric)'
+        required: true
+        type: string
+      element_name:
+        description: 'Element Name (for file naming only)'
+        required: true
+        type: string
+      commit_message:
+        description: 'Commit Message (optional - auto-generated if blank)'
+        required: false
+        type: string
+
+jobs:
+  checkin:
+    name: Check-In Element to Git
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.source_environment }}
+
+    env:
+      SOURCE_ENV: ${{ github.event.inputs.source_environment }}
+      INTERFACE: ${{ github.event.inputs.interface }}
+      STORY_NUMBER: ${{ github.event.inputs.story_number }}
+      ELEMENT_TYPE: ${{ github.event.inputs.element_type }}
+      ELEMENT_ID: ${{ github.event.inputs.element_id }}
+      ELEMENT_NAME: ${{ github.event.inputs.element_name }}
+      COMMIT_MSG: ${{ github.event.inputs.commit_message }}
+
+    steps:
+
+      # -------------------------------------------------------
+      # Step 1 - Validate Inputs
+      # -------------------------------------------------------
+      - name: Validate Inputs
+        run: |
+          echo "=========================================="
+          echo "Check-In Pipeline Starting"
+          echo "=========================================="
+          echo "Source Environment : $SOURCE_ENV"
+          echo "Interface          : $INTERFACE"
+          echo "Story Number       : $STORY_NUMBER"
+          echo "Element Type       : $ELEMENT_TYPE"
+          echo "Element ID         : $ELEMENT_ID"
+          echo "Element Name       : $ELEMENT_NAME"
+          echo "=========================================="
+
+          # Validate story number format
+          if [[ ! "$STORY_NUMBER" =~ ^ADO-[0-9]+$ ]]; then
+            echo "ERROR: Story number must be in format ADO-XXXX (e.g. ADO-5542)"
+            exit 1
+          fi
+
+          # Validate element ID is numeric
+          if [[ ! "$ELEMENT_ID" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: Element ID must be numeric"
+            exit 1
+          fi
+
+          echo "Validation passed."
+
+      # -------------------------------------------------------
+      # Step 2 - Set Environment URL
+      # -------------------------------------------------------
+      - name: Set Environment URL
+        run: |
+          if [ "$SOURCE_ENV" == "TST2" ]; then
+            echo "B2C_URL=bissell--tst2.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "TST1" ]; then
+            echo "B2C_URL=bissell--tst1.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "TST3" ]; then
+            echo "B2C_URL=bissell--tst3.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "PROD" ]; then
+            echo "B2C_URL=support.bissell.com" >> $GITHUB_ENV
+          fi
+
+      # -------------------------------------------------------
+      # Step 3 - Checkout Repository
+      # -------------------------------------------------------
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # -------------------------------------------------------
+      # Step 4 - Setup Story Branch
+      # -------------------------------------------------------
+      - name: Setup Story Branch
+        run: |
+          BRANCH_NAME="story-$STORY_NUMBER"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if story branch already exists
+          if git ls-remote --exit-code --heads origin "$BRANCH_NAME"; then
+            echo "Story branch $BRANCH_NAME already exists - checking out"
+            git checkout "$BRANCH_NAME"
+            git pull origin "$BRANCH_NAME"
+          else
+            echo "Creating new story branch $BRANCH_NAME from tst2"
+            git checkout -b "$BRANCH_NAME"
+          fi
+
+      # -------------------------------------------------------
+      # Step 5 - Install Dependencies
+      # -------------------------------------------------------
+      - name: Install Dependencies
+        run: |
+          pip install PyJWT cryptography --quiet
+
+      # -------------------------------------------------------
+      # Step 6 - Generate JWT and Get USERSESSION Token
+      # -------------------------------------------------------
+      - name: Generate JWT and Get USERSESSION Token
+        run: |
+          echo "Generating JWT token..."
+
+          python3 << 'PYEOF'
+          import jwt
+          import time
+          import json
+          import urllib.request
+          import os
+
+          # Load private key from secret
+          private_key = """${{ secrets.B2C_PRIVATE_KEY }}"""
+
+          # Build JWT payload
+          now = int(time.time())
+          payload = {
+            "sub": "cicd_service",
+            "iss": "emPublicApi",
+            "exp": now + 3600,
+            "jti": f"s{now}",
+            "aud": "/authToken"
+          }
+
+          # Generate JWT token
+          token = jwt.encode(payload, private_key, algorithm="RS256")
+          print(f"JWT token generated successfully")
+
+          # Call authToken endpoint
+          b2c_url = os.environ["B2C_URL"]
+          interface_url = f"https://{b2c_url}/cgi-bin/bissell.cfg"
+          auth_url = f"https://{b2c_url}/AgentWeb/api/elementmanager/authentication/authToken"
+
+          req = urllib.request.Request(auth_url, method="POST")
+          req.add_header("Authorization", f"Bearer {token}")
+          req.add_header("interfaceUrl", interface_url)
+
+          with urllib.request.urlopen(req) as resp:
+            auth_data = json.loads(resp.read().decode())
+
+          usersession = auth_data.get("token")
+          if not usersession:
+            print(f"ERROR: Failed to get USERSESSION token")
+            print(f"Response: {auth_data}")
+            exit(1)
+
+          print("USERSESSION token obtained successfully")
+
+          # Write to GitHub env
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+            f.write(f"USERSESSION={usersession}\n")
+
+          PYEOF
+
+      # -------------------------------------------------------
+      # Step 7 - Export Element from B2C
+      # -------------------------------------------------------
+      - name: Export Element from B2C
+        run: |
+          echo "Creating export package for $ELEMENT_TYPE ID: $ELEMENT_ID..."
+
+          python3 << 'PYEOF'
+          import json
+          import time
+          import urllib.request
+          import urllib.error
+          import os
+
+          b2c_url = os.environ["B2C_URL"]
+          usersession = os.environ["USERSESSION"]
+          element_type = os.environ["ELEMENT_TYPE"]
+          element_id = int(os.environ["ELEMENT_ID"])
+          element_name = os.environ["ELEMENT_NAME"]
+          story_number = os.environ["STORY_NUMBER"]
+
+          base_url = f"https://{b2c_url}/AgentWeb/api/elementmanager"
+
+          def em_request(url, method="GET", body=None):
+            req = urllib.request.Request(url, method=method)
+            req.add_header("USERSESSION", usersession)
+            req.add_header("Content-Type", "application/json")
+            if body:
+              req.data = json.dumps(body).encode()
+            with urllib.request.urlopen(req) as resp:
+              return json.loads(resp.read().decode())
+
+          # Step 1 - Create export package
+          export_body = {
+            "name": f"{story_number}_{element_type}_{element_id}",
+            "desc": f"Export of {element_type} {element_name} for {story_number}",
+            "items": [
+              {
+                "id": element_id,
+                "type": element_type
+              }
+            ]
+          }
+
+          print("Creating export package...")
+          export_resp = em_request(f"{base_url}/export/EMPackages", method="POST", body=export_body)
+          package_id = export_resp.get("id")
+          print(f"Export package created with ID: {package_id}")
+
+          # Step 2 - Poll until export is complete
+          print("Polling export status...")
+          max_attempts = 60
+          attempt = 0
+
+          while attempt < max_attempts:
+            time.sleep(5)
+            status_resp = em_request(f"{base_url}/export/EMPackages/{package_id}")
+            status_code = status_resp.get("status", {}).get("code")
+            status_desc = status_resp.get("status", {}).get("description")
+            print(f"  Status: {status_desc} (code: {status_code})")
+
+            if status_code == "3":  # Export prepare complete
+              print("Export complete!")
+              break
+            elif status_code in ["4", "5"]:  # Error states
+              print(f"ERROR: Export failed with status: {status_desc}")
+              exit(1)
+
+            attempt += 1
+
+          if attempt >= max_attempts:
+            print("ERROR: Export timed out after 5 minutes")
+            exit(1)
+
+          # Step 3 - Download the ZIP package
+          print("Downloading export package...")
+          download_url = f"{base_url}/export/EMPackages/download/{package_id}"
+          req = urllib.request.Request(download_url)
+          req.add_header("USERSESSION", usersession)
+
+          # Save element type folder name mapping
+          folder_map = {
+            "Workspace": "workspaces",
+            "Report": "reports",
+            "NavigationSet": "navigation_sets",
+            "AgentScript": "agent_scripts",
+            "StandardText": "standard_text",
+            "BusinessRule": "ebr"
+          }
+
+          folder_name = folder_map.get(element_type, element_type.lower())
+          interface = os.environ["INTERFACE"]
+          dest_dir = f"customisations/{interface}/{folder_name}"
+          os.makedirs(dest_dir, exist_ok=True)
+
+          # Clean filename
+          safe_name = element_name.replace(" ", "_").replace("/", "-")
+          zip_path = f"{dest_dir}/{element_id}_{safe_name}.zip"
+
+          with urllib.request.urlopen(req) as resp:
+            with open(zip_path, "wb") as f:
+              f.write(resp.read())
+
+          print(f"Package downloaded to: {zip_path}")
+
+          # Write package ID to env for later use
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+            f.write(f"EXPORT_PACKAGE_ID={package_id}\n")
+            f.write(f"ZIP_PATH={zip_path}\n")
+
+          PYEOF
+
+      # -------------------------------------------------------
+      # Step 8 - Update Story Config
+      # -------------------------------------------------------
+      - name: Update Story Config
+        run: |
+          STORY_CONFIG_PATH="storyReferences/$STORY_NUMBER.json"
+
+          python3 << 'PYEOF'
+          import json
+          import os
+
+          story_number = os.environ["STORY_NUMBER"]
+          interface = os.environ["INTERFACE"]
+          element_type = os.environ["ELEMENT_TYPE"]
+          element_id = os.environ["ELEMENT_ID"]
+          element_name = os.environ["ELEMENT_NAME"]
+          zip_path = os.environ["ZIP_PATH"]
+
+          story_config_path = f"storyReferences/{story_number}.json"
+
+          # Load or create story config
+          if os.path.exists(story_config_path):
+            with open(story_config_path) as f:
+              data = json.load(f)
+          else:
+            data = {"story": story_number, "elements": []}
+
+          # Check for existing entry and update or add
+          existing_ids = [e["id"] for e in data["elements"]]
+          if element_id not in existing_ids:
+            data["elements"].append({
+              "interface": interface,
+              "type": element_type,
+              "id": element_id,
+              "name": element_name,
+              "zipPath": zip_path
+            })
+
+          with open(story_config_path, "w") as f:
+            json.dump(data, f, indent=2)
+
+          print(f"Story config updated: {story_config_path}")
+          PYEOF
+
+      # -------------------------------------------------------
+      # Step 9 - Commit and Push to Story Branch
+      # -------------------------------------------------------
+      - name: Commit and Push to Story Branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes detected - nothing to commit."
+            exit 0
+          fi
+
+          # Build commit message
+          if [ -z "$COMMIT_MSG" ]; then
+            FINAL_MSG="$STORY_NUMBER: Export $ELEMENT_TYPE/$ELEMENT_ID ($ELEMENT_NAME) from $SOURCE_ENV [$INTERFACE]"
+          else
+            FINAL_MSG="$STORY_NUMBER: $COMMIT_MSG"
+          fi
+
+          git commit -m "$FINAL_MSG"
+          git push origin "$BRANCH_NAME"
+
+          echo "=========================================="
+          echo "Check-In Complete!"
+          echo "Branch  : $BRANCH_NAME"
+          echo "Element : $ELEMENT_TYPE/$ELEMENT_ID ($ELEMENT_NAME)"
+          echo "Message : $FINAL_MSG"
+          echo "=========================================="
