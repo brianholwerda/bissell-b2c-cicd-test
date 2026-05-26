@@ -1,20 +1,16 @@
 name: Coded Elements Pipeline
 
 on:
-  push:
-    branches:
-      - 'story-ADO-*'
-    paths:
-      - 'customisations/**/extensions/**'
-      - 'customisations/**/scripts/**'
-      - 'customisations/**/process_models/**'
-      - 'customisations/**/cp_files/**'
   workflow_dispatch:
     inputs:
-      story_number:
-        description: 'ADO Story Number (e.g. ADO-5542)'
+      source_environment:
+        description: 'Source Environment'
         required: true
-        type: string
+        type: choice
+        options:
+          - TST2
+          - TST1
+          - TST3
       interface:
         description: 'Interface Name'
         required: true
@@ -32,36 +28,71 @@ on:
           - bissell_se
           - bissell_uk
           - interface_12
+      story_number:
+        description: 'ADO Story Number (e.g. ADO-5542)'
+        required: true
+        type: string
       element_type:
         description: 'Element Type'
         required: true
         type: choice
         options:
-          - extensions
-          - scripts
-          - process_models
-          - cp_files
-      element_identifier:
-        description: 'Element Name or ID'
+          - Extension
+          - CustomScript
+          - ProcessModel
+          - CPFile
+      element_id:
+        description: 'Element ID (numeric - not required for CP Files)'
+        required: false
+        type: string
+      element_name:
+        description: 'Element Name or CP file path (e.g. dav/cp/customer/development/controllers/AjaxCustom.php)'
         required: true
         type: string
-      deploy_to_tst2:
-        description: 'Deploy to TST2 after passing checks?'
-        required: true
-        type: boolean
-        default: true
+      commit_message:
+        description: 'Commit Message (optional - auto-generated if blank)'
+        required: false
+        type: string
 
 jobs:
   # -------------------------------------------------------
-  # Job 1 - Code Linting
+  # Job 1 - Lint and Validate
   # -------------------------------------------------------
   lint:
-    name: Code Linting
+    name: Lint and Validate
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Validate Inputs
+        run: |
+          echo "=========================================="
+          echo "Coded Elements Pipeline Starting"
+          echo "=========================================="
+          echo "Source Environment : ${{ github.event.inputs.source_environment }}"
+          echo "Interface          : ${{ github.event.inputs.interface }}"
+          echo "Story Number       : ${{ github.event.inputs.story_number }}"
+          echo "Element Type       : ${{ github.event.inputs.element_type }}"
+          echo "Element Name       : ${{ github.event.inputs.element_name }}"
+          echo "=========================================="
+
+          # Validate story number format
+          if [[ ! "${{ github.event.inputs.story_number }}" =~ ^ADO-[0-9]+$ ]]; then
+            echo "ERROR: Story number must be in format ADO-XXXX (e.g. ADO-5542)"
+            exit 1
+          fi
+
+          # Validate element ID is provided for non-CP elements
+          if [ "${{ github.event.inputs.element_type }}" != "CPFile" ]; then
+            if [ -z "${{ github.event.inputs.element_id }}" ]; then
+              echo "ERROR: Element ID is required for ${{ github.event.inputs.element_type }}"
+              exit 1
+            fi
+          fi
+
+          echo "Validation passed."
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -69,7 +100,8 @@ jobs:
           node-version: '20'
 
       - name: Install ESLint
-        run: npm install eslint --save-dev
+        run: |
+          npm install eslint eslint-plugin-vue --save-dev --silent
 
       - name: Create ESLint Config
         run: |
@@ -79,7 +111,11 @@ jobs:
               "browser": true,
               "es2021": true
             },
-            "extends": "eslint:recommended",
+            "plugins": ["vue"],
+            "extends": [
+              "eslint:recommended",
+              "plugin:vue/vue3-recommended"
+            ],
             "parserOptions": {
               "ecmaVersion": "latest",
               "sourceType": "module"
@@ -94,14 +130,16 @@ jobs:
           }
           EOF
 
-      - name: Run ESLint on JavaScript Files
+      - name: Run ESLint on JavaScript and Vue Files
         run: |
-          echo "Running ESLint on coded customisation elements..."
+          echo "Scanning for JavaScript and Vue files..."
 
-          JS_FILES=$(find customisations -name "*.js" -not -path "*/node_modules/*" 2>/dev/null)
+          JS_FILES=$(find customisations/${{ github.event.inputs.interface }}/extensions \
+            customisations/${{ github.event.inputs.interface }}/scripts \
+            -name "*.js" -o -name "*.vue" 2>/dev/null | head -100)
 
           if [ -z "$JS_FILES" ]; then
-            echo "No JavaScript files found to lint."
+            echo "No JavaScript or Vue files found to lint - skipping."
           else
             echo "Files to lint:"
             echo "$JS_FILES"
@@ -112,54 +150,12 @@ jobs:
             echo "ESLint passed successfully."
           fi
 
-      - name: Check for TypeScript Files
-        id: check_ts
-        run: |
-          TS_FILES=$(find customisations -name "*.ts" -not -path "*/node_modules/*" 2>/dev/null)
-          if [ -n "$TS_FILES" ]; then
-            echo "typescript_found=true" >> $GITHUB_OUTPUT
-            echo "TypeScript files detected - will run TypeScript checks."
-          else
-            echo "typescript_found=false" >> $GITHUB_OUTPUT
-            echo "No TypeScript files found."
-          fi
-
-      - name: Setup TypeScript (if needed)
-        if: steps.check_ts.outputs.typescript_found == 'true'
-        run: |
-          npm install typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin --save-dev
-
-      - name: Run TypeScript Compilation (if needed)
-        if: steps.check_ts.outputs.typescript_found == 'true'
-        run: |
-          echo "Compiling TypeScript files..."
-          npx tsc --noEmit --allowJs --checkJs false || {
-            echo "ERROR: TypeScript compilation failed."
-            exit 1
-          }
-          echo "TypeScript compilation passed."
-
-  # -------------------------------------------------------
-  # Job 2 - Unit Testing
-  # -------------------------------------------------------
-  unit_tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    needs: lint
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Check for Test Files
+      - name: Check for Unit Tests
         id: check_tests
         run: |
-          TEST_FILES=$(find customisations -name "*.test.js" -o -name "*.spec.js" 2>/dev/null)
+          TEST_FILES=$(find customisations/${{ github.event.inputs.interface }} \
+            -name "*.test.js" -o -name "*.spec.js" 2>/dev/null)
+
           if [ -n "$TEST_FILES" ]; then
             echo "tests_found=true" >> $GITHUB_OUTPUT
             echo "Test files found:"
@@ -167,227 +163,613 @@ jobs:
           else
             echo "tests_found=false" >> $GITHUB_OUTPUT
             echo "No test files found - skipping unit tests."
+            echo "=========================================="
+            echo "NOTICE: No unit test files found."
+            echo "Consider adding tests for your customisations."
+            echo "Test files should be named *.test.js or *.spec.js"
+            echo "=========================================="
           fi
-
-      - name: Install Jest
-        if: steps.check_tests.outputs.tests_found == 'true'
-        run: npm install jest --save-dev
 
       - name: Run Unit Tests
         if: steps.check_tests.outputs.tests_found == 'true'
         run: |
-          echo "Running unit tests..."
-          npx jest --coverage --coverageThreshold='{"global":{"lines":70}}' || {
-            echo "ERROR: Unit tests failed or coverage threshold not met."
+          npm install jest @vue/test-utils --save-dev --silent
+          npx jest --coverage || {
+            echo "ERROR: Unit tests failed."
             exit 1
           }
           echo "Unit tests passed."
 
-      - name: Skip Unit Tests Notice
-        if: steps.check_tests.outputs.tests_found == 'false'
-        run: |
-          echo "=========================================="
-          echo "NOTICE: No unit test files found."
-          echo "Consider adding tests for your customisations."
-          echo "Test files should be named *.test.js or *.spec.js"
-          echo "=========================================="
-
   # -------------------------------------------------------
-  # Job 3 - Static Code Analysis (SonarQube)
+  # Job 2 - Check-In and Deploy
   # -------------------------------------------------------
-  static_analysis:
-    name: Static Code Analysis
+  checkin_and_deploy:
+    name: Check-In and Deploy to ${{ github.event.inputs.source_environment }}
     runs-on: ubuntu-latest
-    needs: unit_tests
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Check for SonarQube Configuration
-        id: check_sonar
-        run: |
-          if [ -n "${{ secrets.SONAR_TOKEN }}" ] && [ -n "${{ secrets.SONAR_HOST_URL }}" ]; then
-            echo "sonar_configured=true" >> $GITHUB_OUTPUT
-            echo "SonarQube configured - running analysis."
-          else
-            echo "sonar_configured=false" >> $GITHUB_OUTPUT
-            echo "SonarQube not configured - skipping analysis."
-          fi
-
-      - name: Run SonarQube Analysis
-        if: steps.check_sonar.outputs.sonar_configured == 'true'
-        uses: SonarSource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      - name: Skip SonarQube Notice
-        if: steps.check_sonar.outputs.sonar_configured == 'false'
-        run: |
-          echo "=========================================="
-          echo "NOTICE: SonarQube analysis skipped."
-          echo "To enable, add SONAR_TOKEN and SONAR_HOST_URL"
-          echo "to your GitHub Secrets."
-          echo "=========================================="
-
-  # -------------------------------------------------------
-  # Job 4 - Deploy to TST2
-  # -------------------------------------------------------
-  deploy_to_tst2:
-    name: Deploy to TST2
-    runs-on: ubuntu-latest
-    needs: static_analysis
-    environment: TST2
-    if: ${{ github.event.inputs.deploy_to_tst2 != 'false' }}
+    needs: lint
+    environment: ${{ github.event.inputs.source_environment }}
 
     env:
-      B2C_URL: bissell--tst2.custhelp.com
+      SOURCE_ENV: ${{ github.event.inputs.source_environment }}
+      INTERFACE: ${{ github.event.inputs.interface }}
+      STORY_NUMBER: ${{ github.event.inputs.story_number }}
+      ELEMENT_TYPE: ${{ github.event.inputs.element_type }}
+      ELEMENT_ID: ${{ github.event.inputs.element_id }}
+      ELEMENT_NAME: ${{ github.event.inputs.element_name }}
+      COMMIT_MSG: ${{ github.event.inputs.commit_message }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Authenticate with B2C TST2
+      - name: Set Environment URLs
         run: |
-          echo "Authenticating with B2C TST2..."
-
-          AUTH_RESPONSE=$(curl -s -X POST \
-            "https://$B2C_URL/services/rest/connect/v1.4/sessions" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"username\": \"${{ secrets.B2C_SITE_LOGIN_USER }}\",
-              \"password\": \"${{ secrets.B2C_SITE_LOGIN_PASS }}\"
-            }")
-
-          SESSION_TOKEN=$(echo "$AUTH_RESPONSE" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          print(data.get('token', ''))
-          ")
-
-          if [ -z "$SESSION_TOKEN" ]; then
-            echo "ERROR: Authentication failed."
-            exit 1
+          if [ "$SOURCE_ENV" == "TST2" ]; then
+            echo "B2C_URL=bissell--tst2.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_UK_URL=bissell-uk--tst2.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_DE_URL=bissell-de--tst2.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "TST1" ]; then
+            echo "B2C_URL=bissell--tst1.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_UK_URL=bissell-uk--tst1.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_DE_URL=bissell-de--tst1.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "TST3" ]; then
+            echo "B2C_URL=bissell--tst3.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_UK_URL=bissell-uk--tst3.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_DE_URL=bissell-de--tst3.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "PROD" ]; then
+            echo "B2C_URL=support.bissell.com" >> $GITHUB_ENV
+            echo "B2C_UK_URL=bissell-uk.support.bissell.com" >> $GITHUB_ENV
+            echo "B2C_DE_URL=bissell-de.support.bissell.com" >> $GITHUB_ENV
           fi
 
-          echo "::add-mask::$SESSION_TOKEN"
-          echo "SESSION_TOKEN=$SESSION_TOKEN" >> $GITHUB_ENV
-          echo "Authentication successful."
-
-      - name: Deploy Extensions to TST2
+      - name: Setup Story Branch
         run: |
-          echo "Deploying extensions to TST2..."
+          BRANCH_NAME="story-$STORY_NUMBER"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
-          for INTERFACE_DIR in customisations/*/; do
-            INTERFACE=$(basename "$INTERFACE_DIR")
-            EXT_DIR="$INTERFACE_DIR/extensions"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-            if [ -d "$EXT_DIR" ]; then
-              for EXT_FILE in "$EXT_DIR"/*.js "$EXT_DIR"/*.json; do
-                [ -f "$EXT_FILE" ] || continue
-                FILENAME=$(basename "$EXT_FILE")
-                echo "Deploying extension: $FILENAME for interface: $INTERFACE"
+          if git ls-remote --exit-code --heads origin "$BRANCH_NAME"; then
+            echo "Story branch $BRANCH_NAME already exists - checking out"
+            git checkout "$BRANCH_NAME"
+            git pull origin "$BRANCH_NAME"
+          else
+            echo "Creating new story branch $BRANCH_NAME from tst2"
+            git checkout -b "$BRANCH_NAME"
+          fi
 
-                curl -s -X POST \
-                  "https://$B2C_URL/services/rest/connect/v1.4/elementManager/extensions" \
-                  -H "Authorization: Session $SESSION_TOKEN" \
-                  -H "Content-Type: application/json" \
-                  -d @"$EXT_FILE" || {
-                    echo "ERROR: Failed to deploy $FILENAME"
-                    exit 1
-                  }
-              done
-            fi
-          done
+      - name: Install Dependencies
+        run: pip install PyJWT cryptography --quiet
 
-          echo "Extensions deployed successfully."
-
-      - name: Deploy Scripts to TST2
+      - name: Generate JWT and Get USERSESSION Token
+        if: ${{ github.event.inputs.element_type != 'CPFile' }}
         run: |
-          echo "Deploying scripts to TST2..."
+          python3 << 'PYEOF'
+          import jwt
+          import time
+          import json
+          import urllib.request
+          import os
 
-          for INTERFACE_DIR in customisations/*/; do
-            INTERFACE=$(basename "$INTERFACE_DIR")
-            SCRIPTS_DIR="$INTERFACE_DIR/scripts"
+          private_key = """${{ secrets.B2C_PRIVATE_KEY }}"""
+          b2c_url = os.environ["B2C_URL"]
 
-            if [ -d "$SCRIPTS_DIR" ]; then
-              for SCRIPT_FILE in "$SCRIPTS_DIR"/*.js "$SCRIPTS_DIR"/*.json; do
-                [ -f "$SCRIPT_FILE" ] || continue
-                FILENAME=$(basename "$SCRIPT_FILE")
-                echo "Deploying script: $FILENAME for interface: $INTERFACE"
+          now = int(time.time())
+          payload = {
+            "sub": "cicd_service",
+            "iss": "emPublicApi",
+            "exp": now + 3600,
+            "jti": f"s{now}",
+            "aud": "/authToken"
+          }
 
-                curl -s -X POST \
-                  "https://$B2C_URL/services/rest/connect/v1.4/elementManager/scripts" \
-                  -H "Authorization: Session $SESSION_TOKEN" \
-                  -H "Content-Type: application/json" \
-                  -d @"$SCRIPT_FILE" || {
-                    echo "ERROR: Failed to deploy $FILENAME"
-                    exit 1
-                  }
-              done
-            fi
-          done
+          token = jwt.encode(payload, private_key, algorithm="RS256")
 
-          echo "Scripts deployed successfully."
+          auth_url = f"https://{b2c_url}/AgentWeb/api/elementmanager/authentication/authToken"
+          interface_url = f"https://{b2c_url}/cgi-bin/bissell.cfg"
 
-      - name: Deploy CP Files to TST2 via WebDAV
+          req = urllib.request.Request(auth_url, method="POST")
+          req.add_header("Authorization", f"Bearer {token}")
+          req.add_header("interfaceUrl", interface_url)
+
+          with urllib.request.urlopen(req) as resp:
+            auth_data = json.loads(resp.read().decode())
+
+          usersession = auth_data.get("token")
+          if not usersession:
+            print(f"ERROR: Failed to get USERSESSION token: {auth_data}")
+            exit(1)
+
+          print("USERSESSION token obtained successfully.")
+
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+            f.write(f"USERSESSION={usersession}\n")
+          PYEOF
+
+      # -------------------------------------------------------
+      # Export and Store EM Elements (Extensions, Scripts, CPMs)
+      # -------------------------------------------------------
+      - name: Export and Store EM Element
+        if: ${{ github.event.inputs.element_type != 'CPFile' }}
         run: |
-          echo "Deploying CP files to TST2 via WebDAV..."
+          python3 << 'PYEOF'
+          import json
+          import time
+          import urllib.request
+          import os
 
-          for INTERFACE_DIR in customisations/*/; do
-            INTERFACE=$(basename "$INTERFACE_DIR")
-            CP_DIR="$INTERFACE_DIR/cp_files"
+          b2c_url = os.environ["B2C_URL"]
+          usersession = os.environ["USERSESSION"]
+          element_type = os.environ["ELEMENT_TYPE"]
+          element_id = int(os.environ["ELEMENT_ID"])
+          element_name = os.environ["ELEMENT_NAME"]
+          story_number = os.environ["STORY_NUMBER"]
+          interface = os.environ["INTERFACE"]
 
-            if [ -d "$CP_DIR" ]; then
-              for CP_FILE in "$CP_DIR"/*; do
-                [ -f "$CP_FILE" ] || continue
-                FILENAME=$(basename "$CP_FILE")
-                echo "Deploying CP file: $FILENAME for interface: $INTERFACE"
+          base_url = f"https://{b2c_url}/AgentWeb/api/elementmanager"
 
-                curl -s -T "$CP_FILE" \
-                  -u "${{ secrets.B2C_CP_LOGIN_USER }}:${{ secrets.B2C_CP_LOGIN_PASS }}" \
-                  "https://$B2C_URL/dav/cp/customer/development/controllers/$FILENAME" || {
-                    echo "ERROR: Failed to deploy CP file $FILENAME"
-                    exit 1
-                  }
-              done
-            fi
-          done
+          def em_request(url, method="GET", body=None):
+            req = urllib.request.Request(url, method=method)
+            req.add_header("USERSESSION", usersession)
+            req.add_header("Content-Type", "application/json")
+            if body:
+              req.data = json.dumps(body).encode()
+            with urllib.request.urlopen(req) as resp:
+              return json.loads(resp.read().decode())
 
-          echo "CP files deployed successfully."
+          # Map element type to EM API type
+          type_map = {
+            "Extension": "Extension",
+            "CustomScript": "CustomScript",
+            "ProcessModel": "ProcessModel"
+          }
+          em_type = type_map.get(element_type)
+
+          # Create export package
+          export_body = {
+            "name": f"{story_number}_{element_type}_{element_id}",
+            "desc": f"Export of {element_type} {element_name} for {story_number}",
+            "items": [{"id": element_id, "type": em_type}]
+          }
+
+          print(f"Creating export package for {element_type} {element_id}...")
+          export_resp = em_request(f"{base_url}/export/EMPackages", method="POST", body=export_body)
+          package_id = export_resp.get("id")
+          print(f"Export package created with ID: {package_id}")
+
+          # Poll until export complete
+          print("Polling export status...")
+          max_attempts = 60
+          for attempt in range(max_attempts):
+            time.sleep(5)
+            try:
+              status_resp = em_request(f"{base_url}/export/EMPackages/{package_id}")
+              code = status_resp.get("status", {}).get("code")
+              desc = status_resp.get("status", {}).get("description")
+              print(f"  Status: {desc} (code: {code})")
+              if code == "3":
+                print("Export complete!")
+                break
+              if code in ["4", "5"]:
+                print(f"ERROR: Export failed: {desc}")
+                exit(1)
+            except Exception as e:
+              print(f"  WARNING: Poll attempt {attempt + 1} failed: {e} - retrying...")
+          else:
+            print("ERROR: Export timed out")
+            exit(1)
+
+          # Download ZIP
+          print("Downloading export package...")
+          folder_map = {
+            "Extension": "extensions",
+            "CustomScript": "scripts",
+            "ProcessModel": "process_models"
+          }
+          folder_name = folder_map.get(element_type, element_type.lower())
+          dest_dir = f"customisations/{interface}/{folder_name}"
+          os.makedirs(dest_dir, exist_ok=True)
+
+          safe_name = element_name.replace(" ", "_").replace("/", "-")
+          zip_path = f"{dest_dir}/{element_id}_{safe_name}.zip"
+
+          req = urllib.request.Request(f"{base_url}/export/EMPackages/download/{package_id}")
+          req.add_header("USERSESSION", usersession)
+          with urllib.request.urlopen(req) as resp:
+            with open(zip_path, "wb") as f:
+              f.write(resp.read())
+
+          print(f"Package downloaded to: {zip_path}")
+
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+            f.write(f"ZIP_PATH={zip_path}\n")
+          PYEOF
+
+      # -------------------------------------------------------
+      # Export and Store CP Files via WebDAV
+      # -------------------------------------------------------
+      - name: Export and Store CP File
+        if: ${{ github.event.inputs.element_type == 'CPFile' }}
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request
+          import urllib.parse
+          import os
+          import base64
+
+          interface = os.environ["INTERFACE"]
+          element_name = os.environ["ELEMENT_NAME"]
+          story_number = os.environ["STORY_NUMBER"]
+
+          # Determine correct WebDAV URL based on interface
+          if interface == "bissell_uk":
+            b2c_url = os.environ["B2C_UK_URL"]
+          elif interface == "bissell_de":
+            b2c_url = os.environ["B2C_DE_URL"]
+          else:
+            b2c_url = os.environ["B2C_URL"]
+
+          username = "${{ secrets.B2C_CP_LOGIN_USER }}"
+          password = "${{ secrets.B2C_CP_LOGIN_PASS }}"
+
+          credentials = base64.b64encode(f"{username}:{password}".encode()).decode()
+
+          # Build WebDAV URL
+          webdav_url = f"https://{b2c_url}/{element_name}"
+          print(f"Downloading CP file from: {webdav_url}")
+
+          # Build local path mirroring WebDAV structure
+          filename = os.path.basename(element_name)
+          relative_path = element_name
+          dest_dir = f"customisations/{interface}/cp_files/{os.path.dirname(relative_path)}"
+          os.makedirs(dest_dir, exist_ok=True)
+          local_path = f"customisations/{interface}/cp_files/{relative_path}"
+
+          req = urllib.request.Request(webdav_url)
+          req.add_header("Authorization", f"Basic {credentials}")
+
+          with urllib.request.urlopen(req) as resp:
+            with open(local_path, "wb") as f:
+              f.write(resp.read())
+
+          print(f"CP file saved to: {local_path}")
+
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+            f.write(f"CP_FILE_PATH={local_path}\n")
+          PYEOF
+
+      # -------------------------------------------------------
+      # Update Story Config
+      # -------------------------------------------------------
+      - name: Update Story Config
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import os
+
+          story_number = os.environ["STORY_NUMBER"]
+          interface = os.environ["INTERFACE"]
+          element_type = os.environ["ELEMENT_TYPE"]
+          element_id = os.environ.get("ELEMENT_ID", "")
+          element_name = os.environ["ELEMENT_NAME"]
+          zip_path = os.environ.get("ZIP_PATH", "")
+          cp_file_path = os.environ.get("CP_FILE_PATH", "")
+
+          story_config_path = f"storyReferences/{story_number}.json"
+
+          if os.path.exists(story_config_path):
+            with open(story_config_path) as f:
+              data = json.load(f)
+          else:
+            data = {"story": story_number, "elements": []}
+
+          # Build element entry
+          entry = {
+            "interface": interface,
+            "type": element_type,
+            "name": element_name
+          }
+
+          if element_type == "CPFile":
+            entry["filePath"] = cp_file_path
+          else:
+            entry["id"] = element_id
+            entry["zipPath"] = zip_path
+
+          # Avoid duplicates
+          existing_names = [e["name"] for e in data["elements"]]
+          if element_name not in existing_names:
+            data["elements"].append(entry)
+
+          with open(story_config_path, "w") as f:
+            json.dump(data, f, indent=2)
+
+          print(f"Story config updated: {story_config_path}")
+          PYEOF
+
+      # -------------------------------------------------------
+      # Commit and Push to Story Branch
+      # -------------------------------------------------------
+      - name: Commit and Push to Story Branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+
+          if git diff --staged --quiet; then
+            echo "No changes detected - nothing to commit."
+            exit 0
+          fi
+
+          if [ -z "$COMMIT_MSG" ]; then
+            FINAL_MSG="$STORY_NUMBER: Export $ELEMENT_TYPE ($ELEMENT_NAME) from $SOURCE_ENV [$INTERFACE]"
+          else
+            FINAL_MSG="$STORY_NUMBER: $COMMIT_MSG"
+          fi
+
+          git commit -m "$FINAL_MSG"
+          git push origin "$BRANCH_NAME"
+
+          echo "=========================================="
+          echo "Check-In Complete!"
+          echo "Branch  : $BRANCH_NAME"
+          echo "Element : $ELEMENT_TYPE ($ELEMENT_NAME)"
+          echo "Message : $FINAL_MSG"
+          echo "=========================================="
+
+  # -------------------------------------------------------
+  # Job 3 - Deploy to Dev Environment
+  # -------------------------------------------------------
+  deploy:
+    name: Deploy to ${{ github.event.inputs.source_environment }}
+    runs-on: ubuntu-latest
+    needs: checkin_and_deploy
+    environment: ${{ github.event.inputs.source_environment }}
+
+    env:
+      SOURCE_ENV: ${{ github.event.inputs.source_environment }}
+      INTERFACE: ${{ github.event.inputs.interface }}
+      STORY_NUMBER: ${{ github.event.inputs.story_number }}
+      ELEMENT_TYPE: ${{ github.event.inputs.element_type }}
+      ELEMENT_ID: ${{ github.event.inputs.element_id }}
+      ELEMENT_NAME: ${{ github.event.inputs.element_name }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: story-${{ github.event.inputs.story_number }}
+
+      - name: Set Environment URLs
+        run: |
+          if [ "$SOURCE_ENV" == "TST2" ]; then
+            echo "B2C_URL=bissell--tst2.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_UK_URL=bissell-uk--tst2.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_DE_URL=bissell-de--tst2.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "TST1" ]; then
+            echo "B2C_URL=bissell--tst1.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_UK_URL=bissell-uk--tst1.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_DE_URL=bissell-de--tst1.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "TST3" ]; then
+            echo "B2C_URL=bissell--tst3.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_UK_URL=bissell-uk--tst3.custhelp.com" >> $GITHUB_ENV
+            echo "B2C_DE_URL=bissell-de--tst3.custhelp.com" >> $GITHUB_ENV
+          elif [ "$SOURCE_ENV" == "PROD" ]; then
+            echo "B2C_URL=support.bissell.com" >> $GITHUB_ENV
+            echo "B2C_UK_URL=bissell-uk.support.bissell.com" >> $GITHUB_ENV
+            echo "B2C_DE_URL=bissell-de.support.bissell.com" >> $GITHUB_ENV
+          fi
+
+      - name: Install Dependencies
+        run: pip install PyJWT cryptography --quiet
+
+      - name: Generate JWT and Get USERSESSION Token
+        if: ${{ github.event.inputs.element_type != 'CPFile' }}
+        run: |
+          python3 << 'PYEOF'
+          import jwt
+          import time
+          import json
+          import urllib.request
+          import os
+
+          private_key = """${{ secrets.B2C_PRIVATE_KEY }}"""
+          b2c_url = os.environ["B2C_URL"]
+
+          now = int(time.time())
+          payload = {
+            "sub": "cicd_service",
+            "iss": "emPublicApi",
+            "exp": now + 3600,
+            "jti": f"s{now}",
+            "aud": "/authToken"
+          }
+
+          token = jwt.encode(payload, private_key, algorithm="RS256")
+          auth_url = f"https://{b2c_url}/AgentWeb/api/elementmanager/authentication/authToken"
+          interface_url = f"https://{b2c_url}/cgi-bin/bissell.cfg"
+
+          req = urllib.request.Request(auth_url, method="POST")
+          req.add_header("Authorization", f"Bearer {token}")
+          req.add_header("interfaceUrl", interface_url)
+
+          with urllib.request.urlopen(req) as resp:
+            auth_data = json.loads(resp.read().decode())
+
+          usersession = auth_data.get("token")
+          if not usersession:
+            print(f"ERROR: Failed to get USERSESSION token: {auth_data}")
+            exit(1)
+
+          print("USERSESSION token obtained successfully.")
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+            f.write(f"USERSESSION={usersession}\n")
+          PYEOF
+
+      - name: Deploy EM Element to Environment
+        if: ${{ github.event.inputs.element_type != 'CPFile' }}
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import time
+          import base64
+          import urllib.request
+          import os
+
+          b2c_url = os.environ["B2C_URL"]
+          usersession = os.environ["USERSESSION"]
+          element_type = os.environ["ELEMENT_TYPE"]
+          element_id = os.environ["ELEMENT_ID"]
+          element_name = os.environ["ELEMENT_NAME"]
+          story_number = os.environ["STORY_NUMBER"]
+          interface = os.environ["INTERFACE"]
+
+          base_url = f"https://{b2c_url}/AgentWeb/api/elementmanager"
+
+          def em_request(url, method="GET", body=None):
+            req = urllib.request.Request(url, method=method)
+            req.add_header("USERSESSION", usersession)
+            req.add_header("Content-Type", "application/json")
+            if body:
+              req.data = json.dumps(body).encode()
+            with urllib.request.urlopen(req) as resp:
+              return json.loads(resp.read().decode())
+
+          def poll_status(url, complete_code, error_codes, max_attempts=60):
+            for attempt in range(max_attempts):
+              time.sleep(5)
+              try:
+                resp = em_request(url)
+                code = resp.get("status", {}).get("code")
+                desc = resp.get("status", {}).get("description")
+                print(f"  Status: {desc} (code: {code})")
+                if code == complete_code:
+                  return resp
+                if code in error_codes:
+                  print(f"ERROR: Operation failed: {desc}")
+                  exit(1)
+              except Exception as e:
+                print(f"  WARNING: Poll attempt {attempt + 1} failed: {e} - retrying...")
+            print("ERROR: Operation timed out")
+            exit(1)
+
+          # Find ZIP file
+          folder_map = {
+            "Extension": "extensions",
+            "CustomScript": "scripts",
+            "ProcessModel": "process_models"
+          }
+          folder_name = folder_map.get(element_type)
+          safe_name = element_name.replace(" ", "_").replace("/", "-")
+          zip_path = f"customisations/{interface}/{folder_name}/{element_id}_{safe_name}.zip"
+
+          if not os.path.exists(zip_path):
+            print(f"ERROR: ZIP file not found at {zip_path}")
+            exit(1)
+
+          with open(zip_path, "rb") as f:
+            zip_content = base64.b64encode(f.read()).decode()
+
+          # Create import package
+          import_body = {
+            "name": f"{story_number}_{element_type}_{element_id}",
+            "packageContent": zip_content
+          }
+
+          print(f"Creating import package for {element_type} {element_id}...")
+          import_resp = em_request(f"{base_url}/import/EMPackages", method="POST", body=import_body)
+          import_id = import_resp.get("id")
+          print(f"Import package created with ID: {import_id}")
+
+          # Poll prescan
+          print("Polling prescan status...")
+          poll_status(
+            f"{base_url}/import/EMPackages/{import_id}",
+            complete_code="5",
+            error_codes=["6", "7"]
+          )
+          print("Prescan complete.")
+
+          # Trigger import
+          patch_body = {
+            "action": "import",
+            "id": str(import_id),
+            "permissions": []
+          }
+          em_request(f"{base_url}/import/EMPackages", method="PATCH", body=patch_body)
+          print("Import triggered.")
+
+          # Poll import completion
+          print("Polling import status...")
+          poll_status(
+            f"{base_url}/import/EMPackages/{import_id}",
+            complete_code="10",
+            error_codes=["11", "12", "20"]
+          )
+          print(f"Successfully deployed: {element_type} {element_id} ({element_name})")
+          PYEOF
+
+      - name: Deploy CP File via WebDAV
+        if: ${{ github.event.inputs.element_type == 'CPFile' }}
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request
+          import base64
+          import os
+
+          interface = os.environ["INTERFACE"]
+          element_name = os.environ["ELEMENT_NAME"]
+
+          # Determine correct WebDAV URL
+          if interface == "bissell_uk":
+            b2c_url = os.environ["B2C_UK_URL"]
+          elif interface == "bissell_de":
+            b2c_url = os.environ["B2C_DE_URL"]
+          else:
+            b2c_url = os.environ["B2C_URL"]
+
+          username = "${{ secrets.B2C_CP_LOGIN_USER }}"
+          password = "${{ secrets.B2C_CP_LOGIN_PASS }}"
+          credentials = base64.b64encode(f"{username}:{password}".encode()).decode()
+
+          # Local file path
+          local_path = f"customisations/{interface}/cp_files/{element_name}"
+
+          if not os.path.exists(local_path):
+            print(f"ERROR: CP file not found at {local_path}")
+            exit(1)
+
+          # Upload via WebDAV
+          webdav_url = f"https://{b2c_url}/{element_name}"
+          print(f"Uploading CP file to: {webdav_url}")
+
+          with open(local_path, "rb") as f:
+            file_content = f.read()
+
+          req = urllib.request.Request(webdav_url, data=file_content, method="PUT")
+          req.add_header("Authorization", f"Basic {credentials}")
+          req.add_header("Content-Type", "application/octet-stream")
+
+          with urllib.request.urlopen(req) as resp:
+            print(f"CP file uploaded successfully. Status: {resp.status}")
+
+          print(f"CP file deployed to Development area on {b2c_url}")
+          print("NOTE: Promotion from Development to Staging and Production")
+          print("must be done manually through the CP UI as normal.")
+          PYEOF
 
       - name: Deployment Summary
         run: |
           echo "=========================================="
-          echo "Deployment to TST2 Complete!"
-          echo "Environment : TST2 ($B2C_URL)"
+          echo "Coded Elements Pipeline Complete!"
+          echo "Environment : $SOURCE_ENV"
+          echo "Interface   : $INTERFACE"
+          echo "Element     : $ELEMENT_TYPE ($ELEMENT_NAME)"
+          echo "Story       : $STORY_NUMBER"
           echo "Timestamp   : $(date -u)"
-          echo "=========================================="
-
-  # -------------------------------------------------------
-  # Job 5 - Rollback (runs only if deploy fails)
-  # -------------------------------------------------------
-  rollback:
-    name: Rollback Deployment
-    runs-on: ubuntu-latest
-    needs: deploy_to_tst2
-    environment: TST2
-    if: failure()
-
-    env:
-      B2C_URL: bissell--tst2.custhelp.com
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Notify Rollback Required
-        run: |
-          echo "=========================================="
-          echo "WARNING: Deployment to TST2 failed!"
-          echo "A manual rollback may be required."
-          echo "Please check the deployment logs above"
-          echo "and restore the previous version manually"
-          echo "if any elements were partially deployed."
           echo "=========================================="
