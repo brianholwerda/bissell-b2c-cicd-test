@@ -423,7 +423,8 @@ jobs:
               # Step 3 - Trigger import
               patch_body = {
                 "action": "import",
-                "id": str(import_id)
+                "id": str(import_id),
+                "permissions": []
               }
               em_request(
                 f"{base_url}/import/EMPackages",
