@@ -12,7 +12,7 @@
 	$thisSKU = getUrlParm('sku')    
 ?>
 <div class="rn_PageContent">
-	
+	<div>Custom change to the answer detail page</div>
 	<? /* If I get a productID on teh URL, then we can send them back to the product details page from the answer */ ?>
 	<rn:condition url_parameter_check="p != null">
        <a href="/app/products/detail/p/<?=$thisProduct;?>" alt="#rn:msg:BACK_TO_LBL# #rn:msg:PRODUCT_DETAILS_LBL#">#rn:msg:BACK_TO_LBL# <rn:field name="ServiceProduct.Name"/></a>
