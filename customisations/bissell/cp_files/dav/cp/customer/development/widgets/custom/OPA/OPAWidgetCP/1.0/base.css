@@ -1,0 +1,11 @@
+/**
+ * base.css: Base CSS for OPAWidget
+ */
+.rn_OPAWidget {
+
+}
+#rn_OPAFrame{
+	height:600px; 
+	max-width: 1400px;
+	width:1100px;
+}

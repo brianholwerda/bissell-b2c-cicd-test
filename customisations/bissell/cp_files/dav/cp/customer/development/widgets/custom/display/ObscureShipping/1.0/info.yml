@@ -1,0 +1,18 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  shipping_addr:
+    name: shipping_addr
+    type: string
+    description: Shipping address to be obscured.
+    default: 
+    required: true
+  place_holder:
+    name: place_holder
+    type: string
+    description: This is place holder in case I need more parameters
+    default: US
+    required: false

@@ -1,0 +1,11 @@
+/**
+ * base.css: Base CSS for IconList
+ */
+.rn_IconList ul {
+    text-align: center;
+}
+.rn_IconList ul li {
+    display: inline-block;
+    vertical-align: bottom;
+    width: 13%;
+}

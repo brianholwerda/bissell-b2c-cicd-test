@@ -1,0 +1,44 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  data_type:
+    name: data_type
+    type: option
+    description: Type of customizable menu to display, either products or categories.
+    options:
+    - products
+    - categories
+    default: categories
+    required: false
+  num_to_display:
+    name: num_to_display
+    type: int
+    description: Number of FAQs to display under each heading
+    default: 5
+    required: false
+  prod_cat_hyperlink:
+    name: prod_cat_hyperlink
+    type: int
+    description: 1 to display link, 0 to not
+    default: 1
+    required: false
+  num_of_columns:
+    name: num_of_columns
+    type: int
+    description: Number of columns to display.  Default is 3
+    default: 4
+    required: false
+  include_answers:
+    name: include_answers
+    type: boolean
+    description: option to include sub answers to the answer topic
+    default: false
+    required: false
+extends:
+  widget: standard/search/ProductCategoryList
+  components:
+  - php
+  overrideViewAndLogic: "true"

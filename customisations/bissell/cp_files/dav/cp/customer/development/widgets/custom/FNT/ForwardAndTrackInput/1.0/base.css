@@ -1,0 +1,143 @@
+/**
+ * base.css: Base CSS for ForwardAndTrackInput2
+ */
+ 
+  /* Note: removed style="white-space:pre-line;" from source */
+
+.rn_ForwardAndTrackInput {
+	margin-left: auto;
+    margin-right: auto;
+    margin: auto;
+	display: inline-block;
+	width: 100%;
+}
+
+.rn_ForwardAndTrackForm {
+	padding: 2em 0;
+	/*border-top: 1px dashed #ccc;*/
+	border-bottom: 1px dashed #ccc;
+}
+
+.rn_ForwardAndTrackThanks {
+	/*white-space:pre-line;*/
+	color: #CC0000;
+	font-weight: bold;
+}
+
+.rn_ForwardAndTrackInputPrivateNote, .rn_FNTprivateNote {
+	background-color: #f8ffcf; /* light yellow */
+	padding:10px;
+	border-bottom: 1px solid #e3ef9f;
+}
+.rn_FNTprivateNote {
+	border: 1px solid #e3ef9f;
+}
+
+.rn_ForwardAndTrackInputCustomer, .rn_FNTcustomer {
+	background-color: #d4ebf9; /* light blue */
+	padding:10px;
+	border-bottom: 1px solid #acd2e8;
+}
+.rn_FNTcustomer {
+	border: 1px solid #acd2e8;
+}
+
+.rn_ForwardAndTrackInputAgentResponse, .rn_FNTagentResponse {
+	background-color: #cfffcf; /* light green */
+	padding:10px;
+	border-bottom: 1px solid #ace6ac;
+}
+.rn_FNTagentResponse {
+	border: 1px solid #ace6ac;
+}
+ 
+ul.rn_FNTlegend {
+	display: flex;
+	margin: 20px 0;
+	float: right;
+}
+.rn_FNTlegend li {
+	margin-right: 10px;
+	border-radius: 20px;
+    width: 150px;
+    text-align: center;
+}
+.rn_FNTlegend li:first-child {
+	padding: 10px 0;
+	border-radius: 20px;
+    width: 60px;
+    text-align: left;
+}
+ 
+ .rn_ForwardAndTrackInput2 {
+	 margin-top: 40px;
+ }
+ 
+ .rn_FNT2Heading {
+	 display: inline-table;
+	 width: 100%;
+ }
+ .rn_FNT2Assist {
+	 float: left;
+	 font-size: 16px;
+ }
+ .rn_FNT2RefNum {
+	 float: right;
+ }
+ 
+ /*
+ @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+	.rn_FNT2RefNum {
+		 margin-top: 14px;
+	 }
+ } */
+ 
+ .rn_FNT2RefNum span {
+	 font-weight: 600;
+ }
+ 
+ .rn_FNT2Module1 {
+	border: 1px solid #ccc;
+	padding: 0;
+	margin: 0;
+ }
+ .rn_FNT2From {
+	 background-color: #f8ffcf; /* light yellow */
+	 border-bottom: 1px solid #e3ef9f;
+	 padding: 10px;
+ }
+ .rn_FNT2Subject {
+	 padding: 10px;
+ }
+ .rn_FNT2Message {
+	 padding: 0 10px 10px;
+ }
+ 
+ .rn_FNT2Loading {
+	 margin: 20px 0 0;
+	 font-size: 14px;
+	 font-weight: 600;
+ }
+ 
+ 
+ .rn_FNT2Modules {
+	 border: 1px solid #ccc;
+	 margin-bottom: 10px;
+ }
+ 
+ #rn_MainColumn {
+	 margin: 0 10px !important;
+	 padding-left: 13%;
+	 width: 72% !important;
+ }
+ #rn_Footer {
+	padding: 0 !important;
+    width: 100%;
+ }
+ .rn_OracleLogo a {
+	 margin-bottom: 15px !important;
+ }
+ 
+ .rn_ForwardAndTrackThanks {
+	 margin-top: 25px;
+ }

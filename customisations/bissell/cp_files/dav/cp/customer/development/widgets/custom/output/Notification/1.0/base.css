@@ -1,0 +1,44 @@
+/**
+ * base.css: Base CSS for Notification
+ */
+.rn_Notification {
+
+}
+div#rn_AnnouncementContainer {
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #F5E0E0;
+    margin:10px auto;
+    max-width: 68em;
+}
+#rn_AnnBodyWrapper {
+    float:right;
+    width: 96%;
+}
+span#rn_AnnouncementTitle {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #990000;
+}
+#rn_AnnouncementTitle hr {
+    margin: 5px 0;
+}
+.ui-dialog .ui-dialog-content {
+    padding: 1em 1em !important;
+}
+#rn_AnnImageContainer {
+    float:left;
+    text-align: center;
+    width: 3%;
+}
+div#rn_AnnImageContainer img {
+    width: 30px;
+}
+@media only screen and (max-width: 900px) {
+    div#rn_AnnImageContainer img {
+        display:none;
+    }
+}
+.rn_AnnouncementBody {
+    color: #990000;
+}

@@ -1,0 +1,342 @@
+header {
+	background: #00205B;
+	color: #FFF;
+	height: 100px;
+	width: 100%;	
+}
+header nav {
+	width: 100%;
+	height: 100%;
+	display: inline-block;
+	position: relative;
+	z-index: 1;
+}
+header nav .rn_NavigationBar {
+	float: left;
+	display: block;
+	margin-right: 2.35765%;
+	width: 85.35098%;
+	margin-right: 0;
+	display: flex;
+	height: 100px;
+}
+header nav .rn_NavigationBar:last-child {
+	margin-right: 0;
+}
+header nav .rn_NavigationBar .rn_NavigationMenuButton {
+	color: #dbdbdb;
+	cursor: pointer;
+	display: none;
+	float: right;
+	font-weight: 700;
+	line-height: 60px;
+	margin: 0;
+	padding-right: 1em;
+	text-transform: uppercase;
+}
+header nav .rn_NavigationBar .rn_NavigationMenuButton:hover {
+	color: #FFF;
+}
+header nav .rn_NavigationBar #rn_NavigationMenuButtonToggle {
+	display: none;
+}
+header nav .rn_NavigationBar #rn_NavigationMenuButtonToggle:checked~.rn_NavigationMenu {
+	display: block;
+	margin-top: 106px;
+    position: fixed;
+    z-index: 1;
+}
+header nav .rn_NavigationBar #rn_NavigationMenuButtonToggle:focus~.rn_NavigationMenuButton {
+	color: #FFF;
+}
+header nav .rn_NavigationBar .rn_NavigationMenu {
+	-webkit-transform-style: preserve-3d;
+	margin: 0 auto;
+	overflow: hidden;
+	padding: 0;
+	width: 100%;
+	margin-top: 35px;
+}
+header nav .rn_NavigationBar .rn_NavigationMenu li {
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 30px;
+	letter-spacing: 0em;
+	text-align: left;
+}
+header nav .rn_NavigationBar .rn_NavigationMenu li a {
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 22px;
+	letter-spacing: 0em;
+	text-align: left;
+	color: #ffffff;
+}
+header nav .rn_NavigationBar .rn_NavigationMenu li a:hover {
+	color: #FFF;
+}
+header nav .rn_NavigationBar .rn_NavigationMenu li a.rn_SelectedTab {
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 22px;
+	letter-spacing: 0em;
+	text-align: left;
+	text-decoration: none;
+	border: none;
+	
+}
+a#rn_underlineHover:active{
+	border-bottom: 3px solid #fff!important;
+}
+header nav .rn_NavigationBar .rn_NavigationMenu li a.rn_SelectedTab:active{
+	border-bottom: 3px solid #fff!important;
+}
+.headerNavOnclick{
+	border-bottom: 3px solid #fff!important;
+}
+header nav .rn_LoginStatus {
+	float: left;
+	display: block;
+	margin-right: 2.35765%;
+	width: 23.23176%;
+	float: right;
+	margin: 0;
+}
+
+header nav .rn_LoginStatus:last-child {
+	margin-right: 0;
+}
+.rn_NavigationMenu {
+    display: inline-block;
+    float: left;
+}
+
+/* TURN OFF MOBILE IN DESKTOP WIDGET */
+#rn_mobileShop{
+	display:none;
+}
+#rn_mobileHeaderDisplay{
+    display:none;
+}
+/* SHOP LINK */
+#rn_shop{
+	color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 30px;
+    letter-spacing: 0em;
+    text-align: left;
+    display: inline-block;
+}
+img#rn_shoppingCart {
+	position: relative;
+    vertical-align: middle;
+    padding-right: 7px;
+}
+#rn_leftShop{
+	float: right;
+	height: 100px;
+	margin-right: 20px;
+	display: flex;
+	justify-content: center;
+	align-items: center;    
+}
+div#rn_rightLogo {
+    width: 20%;
+    text-align: center;
+    padding-top: 13px;
+}
+div#rn_rightLogo img {
+	height: auto;
+	width: 76px;
+}
+div#rn_rightLogo .rn_SupportText {
+	margin-top: -5px;
+}
+#rn_subMenuProd{
+    z-index: 1;
+    position: relative;
+    width: 94%;
+    height: 480px;
+    left: 79px;
+    top: 106px;
+    background: #FFFFFF;
+	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+#rn_subMenuOrder{
+    z-index: 1;
+    position: relative;
+    width: 30%;
+    height: 100%;
+    left: 480px;
+    top: 113px;
+    background: #FFFFFF;
+	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.rn_prodList{
+    float: left;
+	position: inherit;
+    top: -106px;    
+    width: 70%;
+    height: 486px;
+    background: #FFFFFF;
+    padding-top: 30px;
+}
+.rn_orderList{
+	float: left;
+	position: inherit;
+    top: -113px;    
+    width: 70%;
+    height: 270px;
+    background: #FFFFFF;
+    padding-top: 30px;
+
+}
+.rn_subSupport{
+    float: right;
+    position: inherit;
+    top: -106px;
+    height: 486px;
+    width: 30%;
+    background: #F1FCFF;
+}
+.rn_supportCenter {
+    padding-top: 30px;
+}
+h3.rn_subSupportHeader{
+	text-align: left;
+	margin-left: 32px;
+    color: #00205B;
+    font-family: Montserrat;
+	font-size: 18px;
+	font-weight: 700;
+	line-height: 29px;
+	letter-spacing: 0em;
+}
+h3.rn_subSupportHeaderProducts{
+	text-align: left;
+	margin-left: 3%;
+    color: #00205B;
+    font-size: 18px;
+	font-weight: 700;
+	line-height: 22px;
+	letter-spacing: 0em;
+}
+p.rn_subSupportLink, p.rn_subSupportLink a {
+    color: #133F7A;
+    text-align: left;
+    padding-left: 0px;
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 18px;
+	letter-spacing: 0em;
+}
+p.rn_subSupportLink {
+	margin-left: 32px;
+}
+li.rn_subSupportLink a{
+	color: #133F7A;
+    text-align: left;
+    padding-left: 3%;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 18px;
+    letter-spacing: 0em;
+	
+}
+li.rn_subSupportLink {
+    margin: 0 0 0.75em;
+}
+div#rn_subProductMenu {
+    width: 40%;
+}
+.rn_lineBreak{
+	
+    border-bottom: 1px solid white;
+    width: 90%;
+}
+@media screen and (max-width: 1088px) {
+	header nav .rn_NavigationBar {
+		padding-left: 1em;
+	}
+	header nav .rn_LoginStatus {
+		width: auto;
+		position: absolute;
+		right: 20px;
+	}
+}
+
+
+@media screen and (max-width: 960px) {
+	header nav .rn_NavigationBar .rn_NavigationMenu li {
+		background: #00205B;
+		display: block;
+		line-height: 60px !important;
+		overflow: hidden;
+		padding-left: 0.8em;
+		width: 100%;
+	}
+	header nav .rn_NavigationBar .rn_NavigationMenu {
+		display: none;
+	}
+	#rn_leftShop{
+		display: none!important;
+	}
+	#rn_mobileShop{
+		display:block;	
+		width: 40%;
+	}
+	#rn_desktopNav{
+		display: none;
+	}
+	#rn_subSteamMenu {
+    	width: 40%;
+    }    
+    #rn_mobileHeaderDisplay{
+	    display:block;
+    }
+
+	header nav .rn_NavigationBar {
+		width: 100%;
+		padding-left: 0;
+	}
+	header nav .rn_NavigationBar .rn_NavigationMenuButton {
+		float: left;
+		display: block;
+		margin-right: 2.35765%;
+		width: 100%;
+		padding: 0 1em;
+	}
+
+	header nav .rn_NavigationBar .rn_NavigationMenuButton:last-child {
+		margin-right: 0;
+	}
+	header nav .rn_NavigationBar #rn_NavigationMenuButtonToggle {
+		display: inline;
+	}
+	#rn_rightLogo {
+	    width: auto!important;
+	    position: absolute;
+	    left: 40%;
+	}
+	header nav .rn_SearchBar {
+		float: left;
+		display: block;
+		margin-right: 2.35765%;
+		width: 100%;
+		background: #505050;
+		border-bottom: 1px solid #1e2632;
+		padding: 0 1em;
+	}
+
+	header nav .rn_SearchBar:last-child {
+		margin-right: 0;
+	}
+	p#rn_headerSupport{
+		margin-left: 13%;
+	}
+
+}
+
+

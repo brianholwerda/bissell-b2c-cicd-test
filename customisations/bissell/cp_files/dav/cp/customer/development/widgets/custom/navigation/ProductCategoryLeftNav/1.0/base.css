@@ -1,0 +1,75 @@
+/**
+ * base.css: Base CSS for ProductCategoryLeftNav
+ */
+.rn_ProductCategoryLeftNav.rn_ProductCategoryList {
+	width: 30%;
+	position: relative;
+	float:left;
+	display:inline-block;
+}
+.rotate{
+	transform: rotate(90deg);
+}
+
+a.rn_OpenMenu  { 
+    /*font-family: FontAwesome; 
+	content: '\f0d7';*/
+    font-size: 13px!important; 
+    display: inline-block; 
+    background-image:url("/euf/assets/themes/standard/images/icons/bissell/caret_down_solid.svg");
+    background-repeat: no-repeat;
+    
+}
+.rn_ClosedMenu{
+	/*display: none;*/
+}
+a.rn_ClosedMenu  { 
+   /* font-family: FontAwesome;
+   content: '\f0da';*/
+    font-size: 13px!important; 
+    display: inline-block; 
+    background-image: url("/euf/assets/themes/standard/images/icons/bissell/caret_right_solid.svg");
+    background-repeat: no-repeat;
+}
+
+img.rn_OpenMenu.rn_SelectedMenu.rn_downArrow {
+    height: 20px;
+    float: left;
+    width: 30px;
+}
+span.rn_AriaHidden {
+    visibility: hidden;
+}
+
+a.rn_OpenMenu, a.rn_ClosedMenu
+{
+   font-size:0;
+}
+
+.rn_ProductCategoryLeftNav.rn_ProductCategoryList  .rn_ProductCategorySubItem a {
+	color: #231f20;
+	/*padding-left: 10px;*/
+	margin-left: -10px;
+}
+.rn_ProductCategoryLeftNav.rn_ProductCategoryList  li.rn_ProductCategorySubItem2 {
+	padding: 8px 0px;
+}
+.rn_ProductCategoryLeftNav.rn_ProductCategoryList  .rn_ProductCategorySubItem2 a {
+	color: #231f20;
+	margin-left: 40px;
+}
+@media all and (max-width : 991px) {
+	/**** PRODUCT DETAIL  ****/
+	.rn_ProductCategoryLeftNav.rn_ProductCategoryList  li.rn_ProductCategorySubItem {
+		font-size: 12px;
+	}
+
+	
+}
+@media all and (max-width : 767px) {
+	.rn_ProductCategoryLeftNav.rn_ProductCategoryList {
+		display: none;
+		width: 0%;
+	}
+	
+}

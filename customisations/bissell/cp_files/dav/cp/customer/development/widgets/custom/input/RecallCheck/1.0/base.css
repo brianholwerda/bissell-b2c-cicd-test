@@ -1,0 +1,50 @@
+/**
+ * base.css: Base CSS for RecallCheck
+ */
+.rn_RecallCheck {
+	padding-left: 32px;
+	padding-right: 32px;
+}
+
+.rn_RecallCheck.divAlignment {
+	display: inline-flex;
+	align-items: baseline;
+	padding: 0px 0px 10px 0px;
+}
+
+.rn_RecallCheck.labelFormat {
+	width: 100%;
+	height: 100%;
+	line-height: 30px;
+	padding: 0;
+	margin: 0;
+}
+
+.rn_RecallCheck.textInputFormat {
+	width: 200px;
+	margin-right: 15px;
+}
+
+@media all and (max-width : 768px) {
+	.rn_RecallCheck.divAlignment {
+		text-align:center;
+		display:block;
+		padding-bottom:10px;
+	}
+	
+	.rn_RecallCheck.labelFormat {
+		text-align:center;
+	}
+	
+	.rn_RecallCheck.textInputFormat {
+		text-align:center;
+		display:block;
+		margin:0 auto;
+	}
+	
+	.rn_RecallCheck.buttonFormat {
+		text-align:center;
+		display:inline;
+		margin-top:10px;
+	}
+}

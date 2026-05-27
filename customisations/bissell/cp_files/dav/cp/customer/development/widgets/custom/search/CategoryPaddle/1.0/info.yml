@@ -1,0 +1,18 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  max_categories:
+    name: max_categories
+    type: int
+    description: Maximum number of categories to list
+    default: ~
+    required: false
+  max_answers:
+    name: max_answers
+    type: int
+    description: Maximum number of most popular answers to list per category
+    default: 10
+    required: false

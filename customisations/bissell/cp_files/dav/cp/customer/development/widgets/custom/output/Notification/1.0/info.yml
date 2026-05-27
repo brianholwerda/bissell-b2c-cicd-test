@@ -1,0 +1,44 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  announcement_text:
+    name: annoucement_text
+    type: string
+    description: The announcement text to display in the notification (Best practice is to use a Message Base Key)
+    default: ""
+    required: false
+  modal:
+    name: modal
+    type: boolean
+    description: Boolean value whether to display the notification as a modal window.
+    default: true
+    required: false
+  modal_width:
+    name: modal_width
+    type: string
+    description: Width of the modal window in pixels
+    default: "500"
+    required: false
+  announcement_title:
+    name: annoucement_title
+    type: string
+    description: The title of the announcement.  In the modal window, this will appear
+      in the dialog header.  If not modal it will appear just before the announcement
+      itself.
+    default: Announcement
+    required: false
+  cookie_expiration:
+    name: cookie_expiration
+    type: string
+    description: Enter a number of days to wait before showing the annoucement again, or a date to show the announcement after it has been viewed once.  This sets the cookie expiration.  Default value is to display the announcement on each page load.  
+    default: "0"
+    required: false
+  show_empty_announcement:
+    name: show_empty_announcement
+    type: boolean
+    description: Set false to disable showing the announcement if no custom text is available to show. 
+    default: true
+    required: false

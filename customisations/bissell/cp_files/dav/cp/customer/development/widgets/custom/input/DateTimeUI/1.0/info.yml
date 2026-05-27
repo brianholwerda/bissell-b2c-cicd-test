@@ -1,0 +1,92 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  widget_label_input:
+    name: widget_label_input
+    type: string
+    description: Label of the overall widget for the user interface
+    default: Date and Time
+    required: false
+  display_date:
+    name: display_date
+    type: boolean
+    description: Designates whether the date field is displayed for the user interface.
+    default: false
+    required: false
+  date_name:
+    name: date_name
+    type: string
+    description: Name of the date field to be used for the date widget (eg. date_name="Incident.CustomFields.c.demo_date_field").
+    default: 
+    required: false
+  show_calendar:
+    name: show_calendar
+    type: boolean
+    description: Boolean value to designate whether the date entry is selection is made by a calendar (true), or the date is entered into a text field (false)
+    default: true
+    required: false
+  date_input_placeholder:
+    name: calendar_input_placeholder
+    type: string
+    description: Text to display in the date field placeholder.
+    default: 
+    required: false
+  time_input_placeholder:
+    name: time_input_placeholder
+    type: string
+    description: Text to display in the time field placeholder.
+    default: 
+    required: false
+  date_label_input:
+    name: date_label_input
+    type: string
+    description: Label for the date input for the user interface.
+    default: Date
+    required: false
+  date_required:
+    name: date_required
+    type: string
+    description: Designates whether the date field is required for field validation.
+    default: "false"
+    required: false
+  date_label_required_input:
+    name: date_label_required_input
+    type: string
+    description: Required date label for input validation error.
+    default: Date
+    required: false
+  display_time:
+    name: display_time
+    type: boolean
+    description: Designates whether the time field is displayed for the user interface.
+    default: false
+    required: false
+  time_name:
+    name: time_name
+    type: string
+    description: Name of the time field to be used for the time widget (eg. time_name="Incident.CustomFields.c.demo_time_field").
+    default: 
+    required: false
+  time_label_input:
+    name: time_label_input
+    type: string
+    description: Label for the time input for the user interface.
+    default: Time
+    required: false
+  time_required:
+    name: time_required
+    type: string
+    description: Designates whether the time selection is required for field validation.
+    default: "false"
+    required: false
+  time_label_required_input:
+    name: time_label_required_input
+    type: string
+    description: Required time label for input validation error.
+    default: Time
+    required: false
+info:
+  description: This widget displays provides a graphical user interface for date and time fields.  Various configurations are permitted including excluding date, excluding time, utilizing a datetime custom field or using a date only custom field in conjunction with a text field for time.

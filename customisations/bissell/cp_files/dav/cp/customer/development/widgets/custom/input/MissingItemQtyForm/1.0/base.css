@@ -1,0 +1,26 @@
+/**
+ * base.css: Base CSS for WDMRForm
+ */
+
+.ReturnItemForm {
+   
+}
+#rn_MI_Page1 { display: block;}
+	#rn_MI_Page1_Mobile { display: none; }
+tr.rn_WDMR_tr td {
+	border-bottom: 0px;
+}
+.rn_WDMR_th th {
+   color: #00205b;
+   border-bottom: 1px solid #00205b;
+    
+}
+@media all and (max-width: 767px) {
+	#rn_MI_Page1 { display: none;}
+	#rn_MI_Page1_Mobile { display: block; }
+	.rn_WDMR_tr th {
+	   color: #00205b;
+	   border-bottom: none;
+	   width: 33%;
+	}	
+}

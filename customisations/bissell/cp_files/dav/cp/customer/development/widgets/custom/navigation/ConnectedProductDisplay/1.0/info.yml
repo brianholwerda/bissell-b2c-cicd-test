@@ -1,0 +1,23 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  image_path2:
+    name: Path to the CDN Image directory
+    type: string
+    description: Bissell utilizes a CDN directory to store the product images by sku.jpg.  This is the path to that directory.  It will change for US vs CA
+    default: https://bissellcdn.blob.core.windows.net/cdn-storage-container/Web%20Portal%20Product%20Pages/US%20Product%20Pages/150X150
+  referring_url:
+    name: referring_url
+    type: string
+    description: URL of the bissell.com site that should be used.
+    default: www.bissell.com
+    required: false
+  referring_url:
+    name: referrer
+    type: string
+    description: country code of the referring bissell.com site that should be used.  CA Canada US United States
+    default: US
+    required: false

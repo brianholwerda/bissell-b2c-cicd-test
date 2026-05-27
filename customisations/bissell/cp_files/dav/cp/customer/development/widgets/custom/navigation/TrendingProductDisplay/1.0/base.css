@@ -1,0 +1,85 @@
+/* base.css: Base CSS for TrendingProductDisplay */
+.rn_TrendingProductDisplay {
+	padding: 0px;
+}
+.rn_TrendingProductDisplay .rn_ProdDetailSimilar {
+	width: 60%;
+    float: left;
+    margin-top: 20px;
+}
+.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_ImageContainer {
+	background: #FFFFFF;
+	box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
+	border-radius: 10px;
+	text-align: center;
+}
+.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_Item {
+	width: auto;
+}
+.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_Item {
+	margin-right: 1%;
+}
+.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_Item .rn_ActionContainer {
+	align-items: center;
+	padding: 8px 20px;
+	color: #fff;
+    background-color: #00205b;
+    border-color: #00205b;
+    box-shadow: 0 0 0 transparent;
+	border-radius: 100px;
+}
+.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_Item .rn_ActionContainer a.rn_ItemLink:hover {
+	background-color: transparent;
+}
+.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_Item .rn_ActionContainer a.rn_ItemLink {
+	font-weight: 600;
+	font-size: 14px;
+	line-height: 17px;
+	color: #FFFFFF;
+}
+@media all and (max-width : 767px) {
+	.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_ItemGroup ul {
+		overflow-x: scroll;
+		
+		display: flex;
+        flex-direction:row;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-item: baseline; /*flex-end*/
+        display: -webkit-flex;
+        -webkit-flex-direction:row;
+        -webkit-flex-wrap: nowrap;
+        -webkit-justify-content: space-between;
+        -webkit-align-item: baseline; 
+        border-bottom:none;
+        width: 100%;
+			
+	} 
+	.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_ItemGroup ul li {
+		margin: 5px;
+		min-width: 252px;	
+	}
+	.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_Item .rn_ActionContainer {
+		min-width: 100px;
+		padding: 8px;
+		white-space: nowrap;
+	}
+	/* .rn_TrendingProductDisplay .rn_ProdDetailSimilar {
+		width: 100%;
+	    float: left;
+	    margin-top: 20px;
+	    margin-left: 0px;
+	}
+	.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_Item {
+		width: 47%;
+	}
+	.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_ItemGroup ul {
+		margin: 0px 50px;
+	}
+	.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_Item.rn_Odd {
+		margin-right: 30px;
+	}
+	.rn_VisualProductCategorySelector.rn_TrendingProductDisplay .rn_Item.rn_Even {
+		margin-right: 0px;
+	} */
+}

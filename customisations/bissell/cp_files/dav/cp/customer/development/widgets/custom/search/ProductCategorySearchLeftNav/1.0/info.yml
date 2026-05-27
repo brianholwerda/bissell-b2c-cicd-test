@@ -1,0 +1,33 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+  yui:
+  - panel
+  - RightNowTreeView
+  - RightNowTreeViewDialog
+  - RightNowTreeViewDropdown
+attributes:
+  top_level_id:
+    name: top_level_id
+    type: int
+    description: Top level ID for starting point of menu
+    default: ~
+    required: false
+  maximum_levels:
+    name: maximum_levels
+    type: int
+    description: number of levels to show
+    default: ~
+    required: false
+  only_display:
+    name: only_display
+    type: string
+    description: comma seperated list of elements to show in the list
+    default: ""
+    required: false
+extends:
+  widget: standard/search/ProductCategorySearchFilter
+  components: []
+  overrideViewAndLogic: "true"

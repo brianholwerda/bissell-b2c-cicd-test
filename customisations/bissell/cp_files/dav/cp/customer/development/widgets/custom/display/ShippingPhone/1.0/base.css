@@ -1,0 +1,12 @@
+/**
+ * base.css: Base CSS for ShippingPhone
+ */
+.rn_ShippingPhone {
+
+}
+.rn_ShippingPhone .rn_TextInput .rn_Label {
+	display: none;
+}
+.rn_ShippingPhone .rn_TextInput input {
+	width: 25%;
+}

@@ -1,0 +1,69 @@
+/**
+ * base.css: Base CSS for ProductCategoryBreadcrumb
+ */
+.rn_ProductCategoryBreadcrumb.rn_ProductCategoryBreadcrumb {
+	margin-top: 16px;
+}
+.rn_ProductCategoryBreadcrumbHome {
+    display: block;
+    float: left;
+    position: relative;
+    margin-top: 16px;
+    line-height: 24px;
+}
+.rn_ProductCategoryBreadcrumb a{
+	padding-top: 10px;
+}
+.rn_Product.rn_Hero .rn_HeroInner .rn_ProductCategoryBreadcrumb li a {
+	font-weight: 400;
+    font-size: 0.75rem;
+    letter-spacing: 0.27px;
+    color: #767676;
+    text-decoration: none;
+}
+.rn_ProductCategoryBreadcrumbHome a, .rn_ProductCategoryBreadcrumbHome a:hover {
+	font-weight: 400;
+    font-size: 0.75rem;
+    letter-spacing: 0.27px;
+    color: #767676;
+    text-decoration: none;	
+	margin-left: 0px;
+}
+.rn_ProductCategoryBreadcrumbHome span {
+	font-weight: 400;
+    font-size: 0.75rem;
+    letter-spacing: 0.27px;
+    color: #767676;
+    text-decoration: none;
+}
+.rn_Product.rn_Hero .rn_HeroInner .rn_ProductCategoryBreadcrumb li {
+	float: left;
+    position: relative;
+    display: block;
+    margin-left: 0px;
+    line-height: 24px;
+}
+.rn_ProductCategoryBreadcrumb .rn_BreadcrumbLevel.rn_Level0 {
+    display: none !important;
+}
+@media all and (max-width : 767px) {
+	.rn_ProductCategoryBreadcrumb.rn_ProductCategoryBreadcrumb {
+		float: left;
+	    display: block;
+	    position: relative;
+	    width: 88%;
+	}
+	.rn_ProductDetailPage .rn_Product .rn_HeroInner nav {
+		width: 95%;
+	}
+	.rn_ProductCategoryBreadcrumbHome {
+		height: auto;
+	}
+	.rn_Hero .rn_HeroInner span.rn_ProductCategoryBreadcrumbHome a {
+		margin: 0px;
+		padding-top: 0px;
+	}
+	.rn_Product.rn_Hero .rn_HeroInner .rn_ProductCategoryBreadcrumb li {
+		width: auto;
+	}
+}

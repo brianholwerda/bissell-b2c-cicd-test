@@ -1,0 +1,165 @@
+/**
+ * base.css: Base CSS for CategoryPaddle
+ */
+.rn_CategoryPaddle {
+	width: 290px;
+}
+.rn_ListItemLink {
+    text-transform:lowercase;
+}
+.rn_CategoryPaddle ul li {
+    height: 36px;
+    background-color: #EBEBE9;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    padding: 7px 10px 7px 20px;
+}
+.rn_CategoryPaddle ul li.paddleSelected {
+    background-color: #FF6400;
+}
+.rn_CategoryPaddle ul li.paddleSelected a {
+    color:#fff;
+}
+.rn_CategoryPaddle ul li.paddleSelected .category_arrow {
+    display:none;
+}
+.rn_CategoryPaddle ul {
+    margin-left:0px;
+}
+.rn_CategoryPaddle ul li a {
+    color: #747482;
+    font-size: 16px;
+    font-weight: 600;
+}
+div#TopAnswersTitle {
+    margin-top: 39px;
+    font-size: 30px;
+    margin-bottom: 14px;
+}
+img.paddleArrow {
+    margin-left: 8px;
+    margin-bottom: -2px;
+}
+div.category_arrow {
+    float: right;
+    border-left: 2px #D9D7D7 solid;
+}
+div#rn_PaddleMenu {
+    float: left;
+    width: 290px;
+}
+div#rn_answerContainer {
+    float: left;
+    width: 65%;
+    margin-left: 20px;
+}
+#rn_answerContainer hr {
+        margin: 0em 0px 0px 40px;
+}
+.rn_AnswerGroup {
+    display:none;
+}
+#rn_answerContainerTitle {
+    color:#FF6400;
+    font-size: 18px;
+    text-transform: lowercase;
+}
+.rn_PaddleAnswerList {
+    line-height: 15.6px;
+    margin-bottom: 10px;
+    width: 43%;
+    float: left;
+    overflow: hidden;
+    margin-left: 40px;
+}
+div#rn_answerContainerMore {
+    margin-left: 40px;
+    padding-bottom: 20px;
+}
+.rn_PaddleAnswerList a {
+    color: #667;
+    font-size: 13px;
+    font-family: verdana, sans-serif;
+    text-decoration:none;
+}
+.rn_PaddleAnswerList a:hover {
+    color: #FF6400;
+    text-decoration:underline;
+}
+#rn_answerContainerResults {
+    min-height: 185px;
+    overflow: hidden;
+    padding-bottom: 20px;
+    padding-top: 20px;
+}
+#rn_answerContainerMore a {
+    color:#FF6400;
+    font-size: 13px;
+    text-transform: lowercase;
+    font-family: 'Verdana', sans-serif;
+}
+.rn_answerRightArrow {
+    margin-right: 10px;
+    margin-bottom: -2px;
+}
+.rn_answerLeftArrow {
+    -moz-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+    filter: FlipH;
+    -ms-filter: "FlipH";
+    margin-right: 15px;
+    margin-bottom: -2px;
+}
+#rn_answerContainerResults ul {
+    margin-left: 0px;
+    white-space: nowrap;
+}
+div#rn_answerContainerMore .rn_answerRightArrow {
+    margin-left: 15px;
+}
+div#paddleWrapper {
+    width: 908px;
+}
+
+/**** Video Styles ****/
+.rn_PaddleVideoList {
+    float: left;
+    width: 160px;
+    margin-left: 36px;
+    position: relative;
+    vertical-align: top;
+    white-space: normal;
+    margin-bottom: 20px;
+    line-height: 1.2;
+    height: 123px;
+    overflow: hidden;
+}
+/* Hack to get margin-bottom on the ul element */
+.rn_PaddleVideoList:first-child, .rn_PaddleVideoList:first-child+li, .rn_PaddleVideoList:first-child+li+li {
+    margin-bottom: 28px;
+}
+.rn_PaddleVideo {
+
+}
+.rn_PaddleVideoTitle {
+
+}
+img.rn_PaddleThumbnail {
+    width: 160px;
+    height: 90px;
+    border: 1px solid blue;
+    cursor:pointer;
+}
+.playVideo {
+    background: url('images/play_opaque.png') center center no-repeat;
+    position: absolute;
+    top: 40%;
+    left: 55%;
+    width: 70px;
+    height: 70px;
+    margin: -35px 0 0 -35px;
+    z-index: 10;
+    cursor:pointer;
+}

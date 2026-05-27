@@ -1,0 +1,16 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  link_url:
+    name: link_url
+    type: string
+    description: URL to use to build the link
+    default: ""
+    required: false
+extends:
+  widget: standard/reports/Multiline
+  components: []
+  overrideViewAndLogic: "true"

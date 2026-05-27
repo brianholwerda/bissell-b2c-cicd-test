@@ -1,0 +1,28 @@
+/**
+ * base.css: Base CSS for VisualProductCategorySelectorHighLimit
+ */
+.rn_VisualProductCategorySelectorHighLimit.rn_VisualProductCategorySelector {
+
+}
+.rn_VisualProductCategorySelectorHighLimit.rn_VisualProductCategorySelector .rn_Item .rn_ImageContainer img {
+	background: transparent;
+}
+.rn_VisualProductCategorySelectorHighLimit.rn_VisualProductCategorySelector a.rn_ShowChildren {
+	display:none;
+}
+.rn_VisualProductCategorySelector .rn_BreadCrumb{
+	visibility: hidden;
+}
+.rn_NavigationArea{
+	visibility: hidden;
+}
+.rn_VisualProductCategorySelector .rn_ItemGroup:before, .rn_VisualProductCategorySelector .rn_ItemGroup:after{
+	visibility: hidden;
+}
+.rn_ProductCategoryBreadcrumb ol:before, .rn_ProductCategoryBreadcrumb ol:after{
+	visibility: hidden;
+}
+.rn_ScreenReaderOnly{
+	visibility: hidden;
+}
+

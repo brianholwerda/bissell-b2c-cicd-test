@@ -1,0 +1,30 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  url:
+    name: url
+    type: string
+    description: Address of the file to be parsed.
+    default: ""
+    required: true
+  host_ip:
+    name: host_ip
+    type: string
+    description: IP address of the file to be parsed.  Used if the DOMAIN provided is part of the header and URL needs IP to parse.
+    default: ""
+    required: false
+  file_name:
+    name: file_name
+    type: string
+    description: This is the name of the tmp file that will be created for the parsed url.  The html will be stored in this file to decrease load on the server.
+    default: ""
+    required: true
+  frequency:
+    name: frequency
+    type: string
+    description: Specifies the number of hours that the tmp file should be stored before parsing the url again.
+    default: "24"
+    required: false

@@ -1,0 +1,10 @@
+/**
+ * base.css: Base CSS for ResultInfoHeader
+ */
+.rn_ResultInfoHeader.rn_ResultInfo {
+
+}
+/* this prevents a duplicate suggested searches result when SKU is searched and only product pages return. */
+.rn_ProductSKUSearchTerm .rn_ResultInfoHeader.rn_ResultInfo .rn_Suggestion {
+	display: none;
+}

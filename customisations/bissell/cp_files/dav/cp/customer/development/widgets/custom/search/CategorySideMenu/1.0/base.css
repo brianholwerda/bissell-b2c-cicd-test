@@ -1,0 +1,35 @@
+/**
+ * base.css: Base CSS for CategoryTopMenu
+ */
+.rn_CategorySideMenu.rn_ProductCategoryList {
+
+}
+.rn_CategorySideMenu ul {
+    zoom: 1;
+    margin-left: 0px;
+}
+.rn_CategorySideMenu .rn_ListColumns ul li {
+    /*display: inline-block;*/
+    /*margin-right: 25px;*/
+    color: #666677;
+    line-height: 0;
+    line-height: 3em;
+    font-family: 'Open Sans', sans-serif;
+}
+.rn_CategorySideMenu .rn_ListColumns ul li a {
+    color: #666677;
+    text-transform: lowercase;
+}
+.rn_CategorySideMenu .rn_ListColumns {
+    text-align: center;
+}
+.selectedItem {
+	margin-right:0px;
+}
+@media screen and (max-width: 640px) {
+  .rn_CategorySideMenu .rn_ListColumns ul li {
+    float: left;
+    padding-right: 20px;
+  }
+}
+

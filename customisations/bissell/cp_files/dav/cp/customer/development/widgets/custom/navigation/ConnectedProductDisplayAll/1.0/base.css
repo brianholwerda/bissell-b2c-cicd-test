@@ -1,0 +1,84 @@
+/* base.css: Base CSS for ConnectedProductDisplay */
+.rn_ConnectedProductDisplayAll {
+	padding: 0px;
+}
+.rn_ConnectedProductDisplayAll .rn_ProdDetailSimilar {
+	width: 60%;
+    float: left;
+    margin-top: 20px;
+}
+.rn_VisualProductCategorySelector.rn_ConnectedProductDisplayAll .rn_ImageContainer {
+	background: #FFFFFF;
+	box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
+	border-radius: 10px;
+	text-align: center;
+}
+.rn_VisualProductCategorySelector.rn_ConnectedProductDisplayAll .rn_Item {
+	margin-right: 1.75%;
+}
+
+.rn_ConnectedAll .rn_VisualProductCategorySelector {
+	width: 100%;
+	float: none;
+	position: relative;
+	display: inline-block;
+}
+
+.rn_ConnectedAll .rn_VisualProductCategorySelector .rn_Item {
+	border: none;
+	width: 20%;
+    height: 398px;
+    margin-right: 10px;
+    min-width: 325px;
+    background: #FFFFFF;
+    box-shadow: 0px 4px 4px rgb(0 0 0 / 25%);
+    float: none;
+    display: inline-grid;
+    margin-bottom: 1.5em;
+    position: relative;
+}
+.rn_ConnectedAll .rn_VisualProductCategorySelector ul {
+	width: 100%;
+	margin: 0 auto;
+	text-align: center;
+}
+.rn_ConnectedAll .rn_VisualProductCategorySelector .rn_Item.rn_LastItem {
+	margin-right: 10px;
+}
+
+.rn_ConnectedAll .rn_VisualProductCategorySelector .rn_Item .rn_ImageContainer {
+	text-align: center;
+}
+
+.rn_ConnectedAll .rn_VisualProductCategorySelector .rn_Item .rn_ImageContainer img {
+	height: 250px;
+	width: 250px;
+}
+.rn_ConnectedAll .rn_VisualProductCategorySelector .rn_Item .rn_ActionContainer {
+	padding-top: 32px
+}
+.rn_ConnectedAll .rn_VisualProductCategorySelector .rn_Item .rn_ActionContainer a.rn_ItemLink {
+	padding: 0px 3px;
+	font-weight: bold;
+    word-wrap: break-word;
+}
+@media all and (max-width : 767px) {
+	.rn_ConnectedProductDisplayAll .rn_ProdDetailSimilar {
+		width: 100%;
+	    float: left;
+	    margin-top: 20px;
+	    margin-left: 0px;
+	}
+	.rn_VisualProductCategorySelector.rn_ConnectedProductDisplayAll .rn_Item {
+		width: 47%;
+	}
+	.rn_VisualProductCategorySelector.rn_ConnectedProductDisplayAll .rn_ItemGroup ul {
+		margin: 0px 50px;
+	}
+	.rn_VisualProductCategorySelector.rn_ConnectedProductDisplayAll .rn_Item.rn_Odd {
+		margin-right: 30px;
+	}
+	.rn_VisualProductCategorySelector.rn_ConnectedProductDisplayAll .rn_Item.rn_Even {
+		margin-right: 0px;
+	}
+}

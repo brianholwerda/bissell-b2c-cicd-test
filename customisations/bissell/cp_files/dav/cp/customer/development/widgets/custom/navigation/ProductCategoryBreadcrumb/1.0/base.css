@@ -1,0 +1,11 @@
+/**
+ * base.css: Base CSS for ProductCategoryBreadcrumb
+ */
+.rn_ProductCategoryBreadcrumb.rn_ProductCategoryBreadcrumb {
+}
+.rn_ProductCategoryBreadcrumbHome {
+	display: flex;
+}
+.rn_ProductCategoryBreadcrumb a{
+	padding-top: 10px;
+}

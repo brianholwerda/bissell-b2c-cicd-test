@@ -1,0 +1,82 @@
+<!--
+<rn:block id='preResultList'>
+
+</rn:block>
+-->
+
+<!--
+<rn:block id='topResultList'>
+
+</rn:block>
+-->
+
+
+<rn:block id='resultListItem'>
+<li quiq-item-container>
+    <% for (var j = 0; j < headers.length; j++) {
+        var value = data[i][j];
+
+        var id = attrs.counter++;
+        var quiq_message_sender  = attrs.send_message_column_index === j ? 'quiq-message-sender' : '';
+        var quiq_message_content = attrs.message_column_index === j ? 'quiq-message-content' : '';
+        var is_render_and_hide_column = attrs.render_and_hide_column_indexes.indexOf(j) > -1;
+        var limit_column = attrs.limit_column_lengths[j];
+
+        if(limit_column > 0){
+          var showing = value.substring(0, limit_column);
+          var hidden  = value.substring(limit_column);
+        } else {
+          var showing = value;
+          var hidden  = null;
+        }
+
+
+        if(hidden !== null){
+          value = '<span>' + showing + '<span data-togglee="More_' + id + '" class="rn_Hidden">' + hidden + '</span></span><button data-toggler="More_' + id + '" data-togglee="More_' + id + '" quiq-ignore-text>more</button><button class="rn_Hidden" data-toggler="More_' + id + '" data-togglee="More_' + id + '" quiq-ignore-text>less</button>';
+        }
+        else {
+          value = showing;
+        }
+
+
+        if (typeof hide_columns !== 'undefined' && hide_columns.indexOf(headers[j].col_definition) !== -1) {
+            continue;
+        }
+
+        if (((typeof headers[j].visible === 'undefined' || headers[j].visible)
+            && (!hide_empty_columns || !(value === null || value === '' || value === false))) && !is_render_and_hide_column) {
+            if (j < 3) {
+                if (j === 0) { %>
+                    <div <%=quiq_message_content%> <%=quiq_message_sender%> class='rn_Element<%=j+1%>'><h3><%= value %></h3></div>
+                <% }
+                else { %>
+                    <span <%=quiq_message_content%> <%=quiq_message_sender%> class='rn_Element<%=j+1%>'><%= value %></span>
+                <% }
+            }
+            else { %>
+                <span <%=quiq_message_sender%> class='rn_ElementsHeader'><%= ((headers[j].heading) ? headers[j].heading + ':' : '') %></span>
+                <span <%=quiq_message_content%> <%=quiq_message_sender%> class='rn_ElementsData'><%= value %></span>
+            <% }
+        }
+        if(is_render_and_hide_column){%>
+          <span <%=quiq_message_content%> class='rn_Hidden'><%= value %></span>
+        <%}
+    }
+    if(attrs.show_send_full_button === true){ %>
+    <button quiq-message-sender>send full answer</button>
+    <% } %>
+</li>
+</rn:block>
+
+
+<!--
+<rn:block id='bottomResultList'>
+
+</rn:block>
+-->
+
+<!--
+<rn:block id='postResultList'>
+
+</rn:block>
+-->

@@ -1,0 +1,43 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+  yui:
+  - event-resize
+  - yui-throttle
+  - array-extras
+attributes:
+  prefetch_sub_items:
+    name: prefetch_sub_items
+    type: boolean
+    description: Whether to prefetch the sub-items of currently-displaying items.
+      Prefetching allows users to drill down to an item's sub-items without having
+      to wait for AJAX responses. If the item set being displayed is rather large,
+      or intended to be used on a network-constrained device, this attribute should
+      be disabled. If this attribute is 'true' prefetch_sub_items_non_ajax must be
+      'false' in order to prefetch sub items. Both attributes may be 'false', in which
+      case sub items will not be prefetched.
+    default: true
+    required: false
+  prefetch_sub_items_non_ajax:
+    name: prefetch_sub_items_non_ajax
+    type: boolean
+    description: Whether to prefetch the sub-items of initially displayed items without
+      doing an AJAX request on initial page load. Once a user drills down past the
+      initially displayed items an AJAX request will be made to prefetch subsequent
+      sub-items. If this attribute is 'true' prefetch_sub_items must be 'false' in
+      order to prefetch sub items. Both attributes may be 'false', in which case sub
+      items will not be prefetched.
+    default: false
+    required: false
+  image_path2:
+    name: Path to the CDN Image directory
+    type: string
+    description: Bissell utilizes a CDN directory to store the product images by sku.jpg.  This is the path to that directory.  It will change for US vs CA
+    default: https://bissellcdn.blob.core.windows.net/cdn-storage-container/Web%20Portal%20Product%20Pages/US%20Product%20Pages/150X150
+extends:
+  widget: standard/navigation/VisualProductCategorySelector
+  components:
+  - css
+  overrideViewAndLogic: "true"

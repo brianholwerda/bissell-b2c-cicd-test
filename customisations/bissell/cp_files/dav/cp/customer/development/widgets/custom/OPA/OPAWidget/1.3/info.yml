@@ -1,0 +1,57 @@
+version:
+  "1.3"
+info:
+  description: This widget displays an Oracle Policy Automation interview on a page using JSON transactions to complete the interview, unless the deployment uses August 2016 styling, which will host the interview within an iframe. The widget relies on built-in config verbs OPA_APP_BASE_URL and OPA_APP_SECRET.   --CHANGES since widget version 1.2-- an iframe is no longer used for deployments using Latest Version styling, Web Determinations is responsible for determining if there is an available Checkpoint, and the text on the Checkpoint Options screen is configured by the policy model, not by the page inserting the widget.
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  policy_model:
+    name: Policy Model
+    type: string
+    description: The name of the policy model to load. This must match the name of a policy model that has been deployed to the OPA Hub associated with this Service Cloud instance.
+    default: ""
+    required: true
+  init_id:
+    name: Init ID
+    type: string
+    description: The ID (primary key) of the input data context for preseeding. This corresponds to the ID of an object mapped to global in the OPA data mapping. If this attribute is omitted, data will only be preseeded from the Contact object.
+    default: ""
+    required: false
+  locale:
+    name: Locale
+    type: string
+    description: The locale to use during the interview. This locale must be defined within the policy model.
+    default: ""
+    required: false
+  seed_data:
+    name: Seed Data
+    type: string
+    description: Provide additional seed data for any attributes mapped to <url paramter>. Values will be seeded during initialization of the interview or when resuming from a checkpoint. This should be provided as a valid JSON object as described in documentation, escaped for php.
+    default: ""
+    required: false
+  width:
+    name: Width
+    type: string
+    description: Constrain the width of the div hosting the interview. This is a standard html style value, i.e. 700px or 90%
+    default: ""
+    required: false
+  height:
+    name: Height
+    type: string
+    description: Constrain the height of the div hosting the interview. This is a standard html style value, i.e. 700px or 90%. Note that if a value isn't set and the target interview is using August 2016 styling the height of the embedded iframe will be set to 600px.
+    default: ""
+    required: false
+  resume_without_prompt:
+    name: Resume from Checkpoints without prompting
+    type: boolean
+    description: If set to 'true' and the user already has a Checkpoint for the interview then the resume session URL will be called without displaying the prompt. If 'disable_checkpoint_resuming' is set to true then this attribute is ignored.
+    default: false
+    required: false
+  disable_checkpoint_resuming:
+    name: Disable Checkpoint Resuming
+    type: boolean
+    description: If set to 'true' then the start session will always be called even if Checkpoint data exists. If the Policy Model has Checkpoints enabled then Checkpoint data will still be saved, but the user won't be presented with the option to resume from those Checkpoints.
+    default: false
+    required: false

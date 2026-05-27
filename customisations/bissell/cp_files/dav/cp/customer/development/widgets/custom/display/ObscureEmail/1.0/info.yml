@@ -1,0 +1,24 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  email_address:
+    name: email_address
+    type: string
+    description: email address to be obscured.
+    default: 
+    required: false
+  place_holder:
+    name: place_holder
+    type: string
+    description: This is place holder in case i need more parameters
+    default: US
+    required: false
+  explanation_msg:
+    name: explanation_msg
+    type: string
+    description: This is the explanation message as to why we need an email address
+    default:  We do not seem to have an email address on file for your account.  Please provide an email address so tha we can continue. <br/>
+    required: true

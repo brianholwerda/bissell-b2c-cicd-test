@@ -1,0 +1,213 @@
+/**
+ * base.css: Base CSS for ContactUsFooter
+ */
+.rn_ContactUsFooter.rn_ContactUs {
+	background-color: #F1FCFF;
+	max-width: 100%;
+    margin: 0 auto;
+    border-top: 1px solid #C4C4C4;
+}
+.rn_ContactUsFooter a:not([href]):not([tabindex]) {
+	visibility: visible !important;
+}
+.rn_smsFooterDesktop {
+	display: block;
+}
+.rn_smsFooterMobile {
+	display: none;
+}
+/* Contact US Footer */
+#rn_ContactFooter {
+    color: #FFFFFF;
+    border: 1px solid #333333;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    text-align: center;
+    padding: 25px;
+    max-width: 68em;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 40px;
+}
+.rn_ContactFooterInner {
+	width: 100%;
+}
+.rn_ContactUsFooterButtons.rn_CallToActionBox.rn_ContactUsButtons, .rn_ContactUsFooterMoreButtons.rn_CallToActionBox.rn_ContactUsButtons {
+	background: #F1FCFF;
+}
+.rn_ContactUsFooterMoreButtons.rn_CallToActionBox.rn_ContactUsButtons .rn_CallToActionButtons.rn_ContactUsButtons div {
+	justify-content: center;
+	align-items: center;
+	padding: 8px 24px;
+	background: #011F5A;
+	border-radius: 4px;
+}
+.rn_ContactUsFooterMoreButtons.rn_CallToActionBox .rn_CallToActionContainer {
+	padding: 0px;
+}
+.rn_ContactUsFooterButtons .rn_CallToActionAboveImageText {
+	height: 30px;	
+}
+.rn_ContactUsFooterButtons span.rn_CallToActionAboveImageTextSpan {
+	font-weight: 600;
+	font-size: 14px;
+	line-height: 17px;
+	color: #00205B;
+
+}
+#rn_MoreContactOptions {
+	padding-top: 0px;
+}
+screen and (min-width: 1400px) {
+	.rn_ContactFooter { 
+		width: 1320px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+}
+.header_column {
+  float: left;
+}
+.rn_ContactUsOptionsHeadline {
+	text-align: center;
+}
+.rn_ContactUsOptionsHeadline h3 {
+	font-weight: 700;
+	font-size: 42px;
+	line-height: 51px;
+	color: #3F3F3F;
+}
+#rn_ContactUsOptions, #rn_MoreContactOptions, #rn_ShowSurveyOptions {
+	margin-top: 0px;
+	padding-bottom: 0px;
+	text-align: center;
+	max-width: 1410px;
+	margin: 0 auto;
+}
+#rn_ContactUsOptions .rn_CallToActionBox, #rn_MoreContactOptions .rn_CallToActionBox, #rn_ShowSurveyOptions .rn_CallToActionBox {
+	min-height: 100px;
+}
+.rn_ContactUsFooterMoreButtons {
+	border: 0px;
+	background: #F1FCFF;
+}
+.rn_ContactUsFooterSurveyButtons.rn_CallToActionBox {
+    text-align: center;
+    min-height: 100px;
+    border: 0px #001f5b solid;
+    background: #F1FCFF;
+}
+.rn_ContactUsFooterSurveyButtons.rn_CallToActionBox .rn_CallToActionDesc h3 {
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 17px;
+	text-align: center;
+	color: #202020;
+}
+.rn_CallToActionButton1.rn_ContactUsFooterSurveyButtons.rn_CallToActionBox100 a {
+	font-weight: 700;
+	font-size: 14px;
+	line-height: 17px;
+	text-align: center;
+	color: #0074B0;
+}
+.rn_ContactUsFooterSurveyButtons.rn_CallToActionBox .rn_CallToActionButtons div {
+	padding-top: 0px;
+	border: none;
+}
+#rn_ShowSurveyOptions span.rn_CallToActionSubText {
+	display: none;
+}
+.rn_ContactUsFooterSurveyButtons.rn_CallToActionBox .rn_CallToActionButtons {
+	margin-top: 0px;
+}
+.rn_ContactUsFooterSurveyButtons.rn_CallToActionBox .rn_CallToActionContainer {
+	padding: 0px;
+}
+@media screen and (min-width: 481px) {
+	.column {
+	float: left;
+	width: 33.33%; 
+	}
+	
+	.left, .right {
+	  width: 33%;
+	}
+	
+	.middle {
+	  width: 33%;
+	}
+}
+@media screen and (max-width: 768px) {
+	.column {
+		float: left;
+		width: 100%; 
+	}
+	
+	.right {
+		width: 100%;
+	}
+	.left {
+		width: 100%;
+		border-bottom: 2px white solid;
+	    margin: 10px 0px;
+	    padding: 10px 0px;
+		}
+	.middle {
+		width: 100%;
+		border-bottom: 2px white solid;
+		margin: 10px 0px;
+		padding: 10px 0px;
+	}
+	.rn_smsFooterDesktop {
+		display: none;
+	}
+	.rn_smsFooterMobile {
+		display: block;
+	}	
+}
+
+.half {
+width: 50%;
+}
+
+.whole {
+width: 100%;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.need_help {
+font-size: 32px;
+line-height: 36px;
+}
+
+.call_image {
+background: url("/euf/assets/images/headphones.svg") center no-repeat;
+  padding: 22px;
+  margin: 15px;
+}
+
+.chat_image {
+  background: url("/euf/assets/images/chat.svg") center no-repeat;
+  padding: 22px;
+  margin: 15px;
+}
+
+.email_image {
+  background: url("/euf/assets/images/email.svg") center no-repeat;
+  padding: 22px;
+  margin: 15px;
+}
+.rn_FooterEmail {
+	margin-top: 10px;
+}
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}

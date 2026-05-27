@@ -1,0 +1,11 @@
+/**
+ * base.css: Base CSS for Paginator
+ */
+.rn_Paginator.rn_Paginator {
+}
+i.fas.fa-chevron-right {
+    margin-left: 6px;
+}
+i.fas.fa-chevron-left {
+    margin-right: 1px;
+}
