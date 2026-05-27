@@ -18,7 +18,7 @@
 		}
 	    	
     ?>
-    
+    <div>This is a custom change to the home.php page</div>
     <div class="rn_PageContent_HomeProductDisplay rn_Home">
 	    <div id="rn_HomeProductDisplay" class="rn_Container">
 		    <div class="rn_HomeProductDisplayHead">
