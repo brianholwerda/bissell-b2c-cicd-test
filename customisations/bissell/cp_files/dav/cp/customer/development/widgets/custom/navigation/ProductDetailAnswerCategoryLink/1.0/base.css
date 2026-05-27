@@ -1,0 +1,188 @@
+/**
+ * base.css: Base CSS for TopicBrowse
+ */
+.topicBrowse {
+
+}
+h2#rn_subVideoHeader{
+	
+    font-family: Montserrat,sans-serif;
+    font-weight: 700;
+    font-size: 1.3125rem;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+@media screen only and (min-width: 768px){
+h2#rn_subVideoHeader{	
+	font-size: 1.625rem;
+    line-height: 1.3;
+    }
+}
+.rn_topicContainer {
+    width: 50%;
+    float: left;
+    padding: 20px 10px 20px 20px;
+    min-height: 225px;
+    border-top: 1px #001f5b solid;;
+    margin-bottom: 20px;
+}
+ul.rn_AnswerGroup {
+    margin-left: -20px!important;
+    padding-top: 10px;
+}
+.rn_PaddleAnswerList a {
+    color: #667;
+    font-size: 14px;
+    font-family: verdana,arial,helvetica,sans-serif;
+    text-decoration:none;
+}
+.rn_PaddleAnswerList a:hover {
+    color: #FF6400;
+    text-decoration:underline;
+}
+.rn_answerContainerMore a {
+    color: #FF6400;
+    font-size: 14px;
+    text-transform: lowercase;
+}
+.rn_answerContainerMore {
+    padding-top: 15px;
+}
+.rn_answerContainerMore .rn_answerRightArrow {
+	margin-left: 15px;
+}
+.rn_answerRightArrow {
+    margin-bottom: -2px;
+    margin-right: 10px;
+}
+.rn_answerContainerMore2 {
+	/* float:right; */
+	margin-bottom: 20px;
+	display: inline-flex;
+}
+@media screen and (max-width: 640px) {
+  .rn_topicContainer {
+    width: 100%; 
+    float: none; 
+    padding: 10px 10px 20px 20px;
+    min-height: 0px;
+  }
+}
+/**** Video Styles ****/
+.rn_PaddleVideoList {
+    width: 160px;
+    margin-left: 20px;
+    margin-right: 0px;
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    white-space: normal;
+    margin-bottom: 20px;
+    line-height: 1.2;
+        height: 123px;
+    overflow: hidden;
+}
+/* Hack to get margin-bottom on the ul element */
+.rn_PaddleVideoList:first-child, .rn_PaddleVideoList:first-child+li, .rn_PaddleVideoList:first-child+li+li {
+    margin-bottom: 28px;
+}
+.rn_PaddleVideo {
+
+}
+.rn_PaddleVideoTitle {
+
+}
+img.rn_PaddleThumbnail {
+    width: 160px;
+    height: 90px;
+    border: 1px solid blue;
+    cursor:pointer;
+}
+.playVideo {
+    background: url('images/play_opaque.png') center center no-repeat;
+    position: absolute;
+    top: 40%;
+    left: 55%;
+    width: 70px;
+    height: 70px;
+    margin: -35px 0 0 -35px;
+    z-index: 10;
+    cursor:pointer;
+}
+button#rn_backButton {
+    background: none;
+    display: inline-block;
+    float: left;
+    margin-left: -17px;
+}
+
+button#rn_forwardButton {
+    background: none;
+    float: right;
+    display: inline-block;
+    margin-top: -22%;
+}
+.rightScrollArrow {
+    /*display: inline-block;
+    float: right;*/
+    /* margin-right: 55px; */
+    -ms-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    transform: rotate(180deg);
+    /*margin-right: -55px;
+    margin-top: 40px;*/
+}
+.leftScrollArrow {
+    display: inline-block;
+    margin-left: -55px;
+    margin-top: 50px;
+    float: left;
+}
+img.active {
+    cursor:pointer;
+    position: relative;
+    top: -52px;
+    right: 16px;
+}
+img.activeLeft{
+	cursor:pointer;
+    position: relative;
+    top: -4px;
+    right: 1px;
+}
+img.rn_inactiveArrow{
+	position:relative;
+	top: -50px;
+}
+img.rn_inactiveLeftArrow{
+	position:relative;
+	top: 0px;
+}
+.ProdDetailVideos .rn_topicContainer {
+	padding: 0px;
+}
+.ProdDetailVideos .topicBrowse .rn_topicContainer .rn_answerContainerTitle {
+	margin-top: 30px;
+	margin-bottom: 30px;
+	margin-left: 0px !important;
+}
+.ProdDetailVideos .topicBrowse .rn_topicContainer .rn_AnswerGroup .rn_PaddleVideoList {
+    width: 160px;
+    margin-left: 20px;
+    margin-right: 0px;
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    white-space: normal;
+    margin-bottom: 20px;
+    line-height: 1.2;
+    height: 160px;
+    overflow: visible;
+}
+
+@media screen and (max-width: 768px){
+	button#rn_forwardButton{
+		margin-top: -2%!important;
+		margin-right: 40px;
+	}
+}

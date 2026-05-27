@@ -1,0 +1,23 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  data_type:
+    name: data_type
+    type: option
+    description: Widget use on prod/cat change event so tell it which ones to listen
+      for
+    options:
+    - Product
+    - Category
+    default: Product
+    required: false
+extends:
+  widget: standard/input/CustomAllInput
+  components:
+  - css
+	- php
+  overrideViewAndLogic: "true"
+

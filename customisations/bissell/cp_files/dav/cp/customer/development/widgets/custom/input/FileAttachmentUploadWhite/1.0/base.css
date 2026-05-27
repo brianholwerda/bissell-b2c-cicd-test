@@ -1,0 +1,91 @@
+/**
+ * base.css: Base CSS for FileAttachmentUploadWhite
+ */
+.rn_FileAttachmentUploadWhite.rn_FileAttachmentUpload {
+	background-color: transparent;
+	overflow: auto;
+}
+.rn_FileAttachmentUpload input[type="file"] {
+	width: 100%;
+}
+.rn_FileAttachmentUpload {
+	margin-bottom: 0px;
+}
+.rn_FileWrapper {
+	cursor: pointer;
+	display: inline-block;
+	overflow: hidden;
+	position: relative;
+	text-transform: none;
+	width: 90%;
+	float:left;
+	padding-bottom:0px;
+}
+.rn_FileWrapper .rn_FileButton {
+	background-color: #EEEEEE;
+	border-color: #63605A;
+	border-style: solid;
+	border-width: 1px;
+	color: #63605A;
+	cursor: pointer;
+	/* font-family: "SweetSans";
+    font-size: 13px; */
+	height: 40px;
+	line-height: 40px;
+	text-align: center;
+	display:inline-block;
+	width:100%;
+	float:left;
+}
+.rn_FileWrapper  input {
+	cursor: pointer;
+	height: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	filter: alpha(opacity=1);
+	-moz-opacity: 0.01;
+	opacity: 0.01;
+	font-size: 100px;
+	width:100%;
+}
+.rn_FileWrapper .rn_FileMessage {
+	background-color: #ffffff;
+	border-color: #e3e3e3;
+	border-style: solid;
+	border-width: 1px 1px 1px 0;
+	color: #04369b;
+	cursor: pointer;
+	font-family: "SweetSans";
+    font-size: 13px;
+	height: 33px;
+	line-height: 33px;
+	text-align: center;
+	display:inline-block;
+	width:100%;
+	/* float:left; */
+}
+.rn_FileAttachmentUpload img {
+	max-height: 30px;
+	max-width: 30px;
+}
+.rn_FileAttachmentUpload ul {
+	float:left;
+	margin: 10px 20px;
+	min-width: 66%
+}
+.rn_FileAttachmentUpload li {
+	font-size: 12px;
+	color: #63605A;
+	font-family: Arial;
+}
+a.rn_fileRemove {
+	background-image: url("/euf/assets/themes/standard/images/af_grey_close.png");
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+	color: transparent;
+    margin-left: 10px;
+}
+.rn_FileAttachmentUpload label {
+	display:none;
+}

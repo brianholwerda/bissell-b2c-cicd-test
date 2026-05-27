@@ -1,0 +1,313 @@
+/**
+ * base.css: Base CSS for CallToActionBox
+ */
+.rn_CustomButton {
+    text-align: center;
+    min-height: 40px;
+    max-height: 49px;
+    border: none;
+}
+/* .rn_CustomButton.rn_WDMR_cancel {
+	width: 40%;
+	margin: 0px;
+    position: relative;
+    float: left;
+    text-align: left;
+} */
+.rn_CustomButton.rn_WDMR_RESHIP {
+	width: 50%;
+	margin: 0px;
+    position: relative;
+    float: left;
+    text-align: left;
+}
+.rn_CustomButton.rn_WDMR_REFUND {
+	width: 50%;
+	margin: 0px;
+    position: relative;
+    float: left;
+    text-align: left;
+}
+.rn_CustomButton .rn_CustomButtonContainer {
+	
+}
+.rn_CustomButton.rn_CustomButton25 .rn_CustomButtonContainer {
+	
+	
+}
+.rn_CustomButton .rn_CustomButtonButtons {
+	
+}
+/* .rn_CustomButton.rn_WDMR_cancel a {
+	text-decoration: underline !important;
+} */
+.rn_CustomButton .rn_CustomButtonButtons div {
+	min-height: 40px;
+    border: 1px solid white;
+    width: 40%;
+    margin: 0 auto;
+    display: inline-block;
+    padding-top: 10px;
+}
+.rn_CustomButton.rn_CustomButton25 .rn_CustomButtonButtons.rn_CustomButton25 div {
+	width: 100%;
+	margin: 0px;
+	font-weight: bold;
+	color: #01abf1;
+	text-align: left;
+	min-height: 20px;
+}
+.rn_CustomButtonButton1.rn_WDMR_NEXT {
+	float: right;
+	font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding: 0.5rem 1rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border-radius: 5px;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    color: #fff;
+    background-color: #0078a8;
+    border-color: #0078a8;
+    box-shadow: 0 0 0 transparent;
+    font-family: montserrat,sans-serif;
+    text-decoration: none;
+    border-color: #0078a8;
+}
+.rn_CustomButtonButton1.rn_WDMR_NEXT a {
+	color: white;	
+}
+/* RESHIP OR REFUND BUTTONS */
+.rn_CustomButton .rn_CustomButtonButtons .rn_CustomButtonButton1.rn_WDMR_REFUND  {
+	position: relative;
+	float:right;
+	width:40%;
+	font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding: 0.5rem 1rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border-radius: 5px;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    color: #fff;
+    background-color: #0078a8;
+    border-color: #0078a8;
+    box-shadow: 0 0 0 transparent;
+    font-family: montserrat,sans-serif;
+    text-decoration: none;
+    border-color: #0078a8;
+    margin-right: 10px;
+}
+.rn_CustomButton .rn_CustomButtonButtons .rn_CustomButtonButton1.rn_WDMR_RESHIP  {
+	position: relative;
+	float:left;
+	width:40%;
+	font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding: 0.5rem 1rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border-radius: 5px;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    color: #fff;
+    background-color: #0078a8;
+    border-color: #0078a8;
+    box-shadow: 0 0 0 transparent;
+    font-family: montserrat,sans-serif;
+    text-decoration: none;
+    border-color: #0078a8;
+    margin-left: 10px
+}
+.rn_CustomButtonButton1.rn_WDMR_REFUND a, .rn_CustomButtonButton1.rn_WDMR_RESHIP a  {
+	color: white;
+}
+
+/* SAME ADDRESS OR DIFFERENT ADDRESS */
+.rn_CustomButton.rn_WDMR_SAMEADDRESS, .rn_CustomButton.rn_WDMR_DIFFADDRESS {
+	width: 50%;
+	float:left;
+}
+.rn_CustomButton .rn_CustomButtonButtons .rn_CustomButtonButton1.rn_WDMR_SAMEADDRESS  {
+	position: relative;
+	float:right;
+	width:100%;
+	font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding: 0.5rem 1rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border-radius: 5px;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    color: #fff;
+    background-color: #0078a8;
+    border-color: #0078a8;
+    box-shadow: 0 0 0 transparent;
+    font-family: montserrat,sans-serif;
+    text-decoration: none;
+    border-color: #0078a8;
+    margin-right: 10px;
+}
+.rn_CustomButton .rn_CustomButtonButtons div.rn_WDMR_DIFFADDRESS, .rn_CustomButton .rn_CustomButtonButtons div.rn_WDMR_SAMEADDRESS {
+	min-width: 300px;
+}
+.rn_CustomButton .rn_CustomButtonButtons .rn_CustomButtonButton1.rn_WDMR_DIFFADDRESS  {
+	position: relative;
+	float:left;
+	width:100%;
+	font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding: 0.5rem 1rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border-radius: 5px;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    color: #fff;
+    background-color: #0078a8;
+    border-color: #0078a8;
+    box-shadow: 0 0 0 transparent;
+    font-family: montserrat,sans-serif;
+    text-decoration: none;
+    border-color: #0078a8;
+    margin-left: 10px
+}
+.rn_CustomButtonButton1.rn_WDMR_SAMEADDRESS a, .rn_CustomButtonButton1.rn_WDMR_DIFFADDRESS a  {
+	color: white;
+}
+/* CANCEL BUTTON */
+.rn_CustomButton.rn_WDMR_cancel {
+	width: 50%;
+	float:left;
+}
+.rn_CustomButton .rn_CustomButtonButtons .rn_CustomButtonButton1.rn_WDMR_cancel  {
+	position: relative;
+	float:right;
+	width:100%;
+	font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding: 0.5rem 1rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border-radius: 5px;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    color: #fff;
+    background-color: #0078a8;
+    border-color: #0078a8;
+    box-shadow: 0 0 0 transparent;
+    font-family: montserrat,sans-serif;
+    text-decoration: none;
+    border-color: #0078a8;
+    margin-right: 10px;
+}
+.rn_CustomButton .rn_CustomButtonButtons div.rn_WDMR_cancel {
+	min-width: 300px;
+}
+.rn_CustomButtonButton1.rn_WDMR_cancel a  {
+	color: white;
+}
+.rn_CustomButton .rn_CustomButtonButtons div.rn_WDMR_cancel {
+    min-width: 200px;
+    max-width: 200px;
+}
+
+.rn_CustomButton.rn_ServiceCenterLocator {
+	background-color: #001f5b;
+	color: #fff;
+}
+@media all and (max-width : 991px) {
+	.rn_CustomButton.rn_CustomButton25 {
+		width: 45%;
+		margin: 15px 15px 30px;
+	    position: relative;
+	    float: left;
+	}	
+}
+@media all and (max-width : 767px) {
+	.rn_CustomButton.rn_CustomButton25 {
+		width: 100%;
+		margin: 15px auto;
+	    position: relative;
+	    float: left;
+	}
+	.rn_CustomButton.rn_CustomButton25 .rn_CustomButtonButtons.rn_CustomButton25 div {
+		text-align: center;
+	}
+	.rn_CustomButton.rn_CustomButton25 .rn_CustomButtonDesc h3 {
+		text-align: center;
+		font-weight: bold;
+	}
+	.rn_CustomButton.rn_WDMR_SAMEADDRESS, .rn_CustomButton.rn_WDMR_DIFFADDRESS {
+		width: 100%;
+		margin-top: 10px;
+		
+	}
+	.rn_CustomButton .rn_CustomButtonButtons div {
+		max-width: auto;
+	}
+	.rn_CustomButton.rn_WDMR_DIFFADDRESS {
+		margin-left:-20px;
+	}
+	.rn_CustomButton .rn_CustomButtonButtons div.rn_WDMR_DIFFADDRESS {
+		max-width: 100%;
+	}
+	.rn_CustomButton .rn_CustomButtonButtons .rn_CustomButtonButton1.rn_WDMR_RESHIP,
+	.rn_CustomButton .rn_CustomButtonButtons .rn_CustomButtonButton1.rn_WDMR_REFUND,
+	.rn_CustomButton.rn_WDMR_SAMEADDRESS, .rn_CustomButton.rn_WDMR_DIFFADDRESS, 
+	.rn_CustomButton.rn_WDMR_cancel {
+
+		width: 100%;
+	}
+	.rn_CustomButton.rn_WDMR_SAMEADDRESS, .rn_CustomButton.rn_WDMR_DIFFADDRESS {
+		padding-left: 10px; 
+	}
+	.rn_CustomButton.rn_WDMR_cancel {
+		margin-left: 10px; 
+	}
+	.rn_CustomButton .rn_CustomButtonButtons div.rn_WDMR_cancel {
+	    min-width: 200px;
+	    max-width: 100%;
+	}
+	.rn_CustomButton .rn_CustomButtonButtons div {
+		max-width: auto;
+	}
+}
+@media only screen and (min-width: 768px) {
+	.rn_CustomButton .rn_CustomButtonButtons div {
+		max-width: 210px;
+	}
+@media all and (max-width : 415px) {	
+	.rn_CustomButton .rn_CustomButtonButtons .rn_CustomButtonButton1.rn_WDMR_RESHIP,
+	.rn_CustomButton .rn_CustomButtonButtons .rn_CustomButtonButton1.rn_WDMR_REFUND,
+	.rn_CustomButton.rn_WDMR_SAMEADDRESS, .rn_CustomButton.rn_WDMR_DIFFADDRESS {
+		width: 90%;
+	}
+}

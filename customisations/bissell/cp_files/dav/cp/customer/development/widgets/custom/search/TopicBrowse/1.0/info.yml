@@ -1,0 +1,36 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  max_topics:
+    name: max_topics
+    type: int
+    description: Maximum number of sub categories to display
+    default: 8
+    required: false
+  max_answers:
+    name: max_answers
+    type: int
+    description: Maximum number of answers per topic to display
+    default: 5
+    required: false
+  default_category:
+    name: default_category
+    type: int
+    description: Default category for which to display topics in the event that the URL parameter /c/ is null.
+    default: 
+    required: false
+  show_filter:
+    name: show_filter
+    type: boolean
+    description: toggle to either show the filter ability or not
+    default: true
+    required: true
+  is_video:
+    name: is_video
+    type: boolean
+    description: instead of using category, this boolean indicates we should be loading videos.
+    default: true
+    required: true

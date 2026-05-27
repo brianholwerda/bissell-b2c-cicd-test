@@ -1,0 +1,47 @@
+/**
+ * base.css: Base CSS for TopQuestionsByCategory
+ */
+.rn_TopQuestionsByCategoryImg.rn_ProductCategoryList {
+	margin-top: 40px;
+	margin-left: 40px;
+	width:100%;
+}
+
+.rn_TopQuestionsByCategoryImg .rn_HierList {
+	margin-bottom: 25px;
+	padding-right: 15px;
+}
+#rn_TQCImageContainer {
+    float:left;
+    text-align: center;
+	margin-right: 15px;
+}
+div#rn_TQCCatContainer {
+    float: left;
+    max-width: 70%;
+}
+.catBox .rn_TopAnswers li
+{
+	/*margin-left: 20px;
+	list-style: disc;*/
+	list-style: none;
+}
+.rn_TopQuestionsByCategoryImg .catBox a {
+    font-size: 13px;
+    font-weight: normal;
+    font-family: 'ProximaNova-Light', sans-serif;
+	color: #444444;
+	line-height: 1em;
+}
+.rn_TopQuestionsByCategoryImg .rn_ProductHeader {
+    font-size: 16px;
+    font-weight: normal;
+    font-family: 'proxima_nova_altbold', sans-serif;
+	color: #002e55;
+	line-height: 1em;
+	text-transform: uppercase;
+}
+
+div#rn_TQCCatContainer h3 {
+    line-height: 1em;
+}

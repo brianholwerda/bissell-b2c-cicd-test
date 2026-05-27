@@ -1,0 +1,145 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  image_url:
+    name: image_url
+    type: string
+    description: The URL to the icon image
+    default: ""
+    required: false
+  image_alt:
+    name: image_alt
+    type: string
+    description: The alt tag for the icon image, include this if there's an icon for ADA
+    default: ""
+    required: false
+  headline:
+    name: headline
+    type: string
+    description: The headline of the box
+    default: ""
+    required: false
+  subtext:
+    name: subtext
+    type: string
+    description: The subtext of the box
+    default: ""
+    required: false
+  button_1_text:
+    name: button_1_text
+    type: string
+    description: Button 1 display text
+    default: ""
+    required: false
+  button_1_url:
+    name: button_1_url
+    type: string
+    description: URL for button 1
+    default: ""
+    required: false
+  button_1_id:
+    name: button_1_id
+    type: string
+    description: Button 1 id tag
+    default: ""
+    required: false
+  button_2_text:
+    name: button_2_text
+    type: string
+    description: Button 2 display text
+    default: ""
+    required: false
+  button_2_url:
+    name: button_2_url
+    type: string
+    description: URL for button 2
+    default: ""
+    required: false
+  button_2_id:
+    name: button_2_id
+    type: string
+    description: Buttons 2 id tag
+    default: ""
+    required: false
+  button_3_text:
+    name: button_3_text
+    type: string
+    description: Button 3 display text
+    default: ""
+    required: false
+  button_3_url:
+    name: button_3_url
+    type: string
+    description: URL for button 3
+    default: ""
+    required: false
+  button_3_id:
+    name: button_3_id
+    type: string
+    description: Buttons 3 id tag
+    default: ""
+    required: false
+  class_name:
+    name: class_name
+    type: string
+    description: The class name that should be applied to this box
+    default: ""
+    required: false
+  responsive_class_buttons:
+    name: class_name
+    type: string
+    description: The responsive class name that should be applied to this box
+    default: ""
+    required: false
+  responsive_class_bottomtext:
+    name: class_name
+    type: string
+    description: The responsive class name that should be applied to this box
+    default: ""
+    required: false
+    styleoverridetoplevel:
+    name: styleoverridetoplevel
+    type: string
+    description: Override the style settings of the top level div
+    default: ""
+    required: false
+  styleoverridesecondlevel:
+    name: styleoverridesecondlevel
+    type: string
+    description: Override the style settings of the second level div
+    default: ""
+    required: false
+  desktoptext:
+    name: desktoptext
+    type: string
+    description: Text for the desktop text portion of the widget
+    default: ""
+    required: false
+  desktop_span_class:
+    name: desktop_span_class
+    type: string
+    description: Class applied to the desktop span
+    default: ""
+    required: false
+  mobiletext:
+    name: mobiletext
+    type: string
+    description: Text for the mobile text portion of widget
+    default: ""
+    required: false
+  mobile_span_class:
+    name: mobile_span_class
+    type: string
+    description: Class applied to the mobile span
+    default: ""
+    required: false
+  has_buttons:
+    name: has_buttons
+    type: boolean
+    description: Boolean to toggle the display of buttons for the box, if false, button
+      1 is displayed as a link only
+    default: true
+    required: false

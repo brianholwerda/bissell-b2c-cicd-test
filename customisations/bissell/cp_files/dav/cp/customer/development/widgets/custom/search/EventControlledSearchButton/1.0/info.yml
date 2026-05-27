@@ -1,0 +1,16 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+extends:
+  widget: standard/search/SearchButton
+  components:
+  - js
+  - css
+attributes:
+    force_ajax_request:
+      name: Force Ajax Request
+      type: BOOLEAN
+      description: Whether or not to force ajax request
+      default: false

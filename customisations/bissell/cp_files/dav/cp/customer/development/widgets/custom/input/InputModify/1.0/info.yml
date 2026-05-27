@@ -1,0 +1,83 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  modify_validation:
+    name: modify_validation
+    type: boolean
+    description: Specifies whether OSvC form field validation should be modified from inherency.
+    default: false
+    required: false
+  validate_on_blur:
+    name: validate_on_blur
+    type: boolean
+    description: Specifies whether form fields are validated on blur, or when the form submit button is clicked.
+    default: true
+    required: false
+  pholder_label:
+    name: pholder_label
+    type: boolean
+    description: Specifies whether field labels should be hidden and the labels be placed inside the fields as placeholders.
+    default: false
+    required: false
+  modify_asterisk:
+    name: modify_asterisk
+    type: boolean
+    description: Specifies whether the asterisk is moved to before the label
+    default: true
+    required: false
+  pholder_validate:
+    name: pholder_validate
+    type: boolean
+    description: Specifies whether the validation text is placed in the input as a
+      placeholder (true), or added below the input as text (false).
+    default: false
+    required: false
+  background_image:
+    name: background_image
+    type: string
+    description: The location of the background image to be used for input elements
+      on failed validation.  This image must be placed in the themes/&lt;theme&gt;/images/icons
+      folder.  Default value is "images/icons/red_ex.png"
+    default: images/icons/red_ex.png
+    required: false
+  border_color:
+    name: border_color
+    type: string
+    description: Hex color for input border color on failed validation.
+    default: D31334
+    required: false
+  orig_border_color:
+    name: orig_border_color
+    type: string
+    description: Orignal hex color for input border.
+    default: afa276
+    required: false
+  text_color:
+    name: text_color
+    type: string
+    description: Hex color text on failed validation.  Only applies to text appended below the form field.  pholder_validate must not be true.
+    default: D31334
+    required: false
+  alt_text:
+    name: alt_text
+    type: string
+    description: Alternate text to prepend to the label used for validation. (ex. Please enter a First Name).  If alt_text is specified the appended "Required" will be removed and the alternate text will be prepended to the label.  Default is no change to label text (ex. First Name Required)
+    default: 
+    required: false
+  class:
+    name: class
+    type: string
+    description: The widget wrapper div class on which to perform validation.
+    default: required
+    required: false
+info:
+  description: This widget will change the way form field validation is handled on
+    all input, textarea and select form fields by disabling the OSvC inherent field
+    validation for required fields and adding it's own.  When a required field is
+    'blurred' (loses focus), the field border changes color, a background image is
+    added to the form field, and an element is added below the form field which modifies
+    the form label and creates a validation text to alert the user immediately that
+    field is required.  This widget also allows widget labels to be converted to input placeholders.

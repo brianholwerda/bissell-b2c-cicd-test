@@ -1,0 +1,19 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  referring_url:
+    name: referring_url
+    type: string
+    description: URL of the bissell.com site that should be used.
+    default: www.bissell.com
+    required: false
+  referring_url:
+    name: referrer
+    type: string
+    description: country code of the referring bissell.com site that should be used.  CA
+      Canada US United States
+    default: US
+    required: false

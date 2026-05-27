@@ -1,0 +1,48 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  button_1_text:
+    name: button_1_text
+    type: string
+    description: Button 1 display text
+    default: ""
+    required: false
+  button_1_url:
+    name: button_1_url
+    type: string
+    description: URL for button 1
+    default: ""
+    required: false
+  button_1_id:
+    name: button_1_id
+    type: string
+    description: Button 1 id tag
+    default: ""
+    required: false
+  button_1_onclick:
+    name: button_1_onclick
+    type: string
+    description: The function call to make instead of redirecting to URL
+    default: ""
+    required: false
+  class_name:
+    name: class_name
+    type: string
+    description: The class name that should be applied to this box
+    default: ""
+    required: false
+  div_id:
+    name: div_id
+    type: string
+    description: The divid that should be applied to this button
+    default: ""
+    required: false
+  tab_index:
+    name: tab_index
+    type: string
+    description: The tabindex that should be applied to this div (tabindex='0')
+    default: ""
+    required: false

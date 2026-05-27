@@ -1,0 +1,22 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  image_path:
+    name: image_path
+    type: string
+    description: The path to the location of the product images to show in the search
+      results.
+    default: /euf/assets/images/prodcat-images/
+    required: false
+  image_path2:
+    name: Path to the CDN Image directory
+    type: string
+    description: Bissell utilizes a CDN directory to store the product images by sku.jpg.  This is the path to that directory.  It will change for US vs CA
+    default: https://bissellcdn.blob.core.windows.net/cdn-storage-container/Web%20Portal%20Product%20Pages/US%20Product%20Pages/250X250
+extends:
+  widget: standard/reports/Multiline
+  components: []
+  overrideViewAndLogic: "true"

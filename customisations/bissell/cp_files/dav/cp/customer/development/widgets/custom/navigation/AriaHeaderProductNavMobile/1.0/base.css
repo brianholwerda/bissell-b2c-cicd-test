@@ -1,0 +1,138 @@
+@media all and (max-width : 991px) {
+	/**** PRODUCT DETAIL  ****/
+	.rn_Mobile_AriaHeaderMobile.rn_Mobile_ProductCategoryList  li.rn_Mobile_ProductCategorySubItem {
+		font-size: 12px;
+	}
+
+	
+}
+@media all and (max-width : 960px) {
+	.menu-toggleable-left.navbar-toggleable.in {
+		z-index: 1 !important;
+	    position: relative;
+	    display: inline-block;
+	    margin-top: 12px;
+	}
+	.rn_Mobile_AriaHeaderMobile.rn_Mobile_ProductCategoryList {
+		/* display: none; */
+		width: 0%;
+	}
+	img.rn_chevronRight {
+	    left: 0px;
+	    top: 4px;
+	    right: 0px;
+	    position: relative;
+	    float: right;
+	    display: inline;
+	}
+	img.rn_chevronLeft {
+		left: 6px;
+	    top: 14px;
+	    right: 0px;
+	    position: relative;
+	    float: left;
+	    display: inline;
+	    margin-right: 20px
+	 }
+
+	/**
+	 * base.css: Base CSS for AriaHeaderMobile
+	 */
+	 .rn_Mobile_ProductCategorySubItem a {
+		 color: #ffffff;
+	 }
+	 .rn_Mobile_ProductCategorySubItem img.rn_chevronRight {
+		 padding-top: 12px;
+	 }
+	  .rn_Mobile_AriaHeaderMobile.rn_Mobile_ProductCategoryList .rn_Mobile_ProductCategorySubItem a{
+	    font-size: 20px;
+	    font-weight: 700;
+	    line-height: 18px;
+	    letter-spacing: 0.5px;
+	    text-align: left;
+	    color: #133F7A!important;
+	    margin-left: 0px!important;
+	 }
+	 .rn_Mobile_AriaHeaderMobile.rn_Mobile_ProductCategoryList .rn_Mobile_ProductCategorySubItem2 a{
+		font-size: 20px;
+		font-weight: 400;
+		line-height: 18px;
+		letter-spacing: 0.5px;
+		text-align: left;
+		color: #000000;
+		margin-left: 0px!important;
+	 }
+	 
+	.rn_Mobile_ListColumns{
+		margin-top: 0px;
+		margin-left: 4px;
+	}
+	.rotate{
+		transform: rotate(90deg);
+	}
+	
+	a.rn_Mobile_OpenMenu  { 
+	    font-family: FontAwesome; 
+		content: '\f0d7';
+	    font-size: 13px!important; 
+	    display: inline-block; 
+	    background-image:url("/euf/assets/themes/standard/images/icons/bissell/caret_down_solid.svg");
+	    background-repeat: no-repeat;
+	    
+	}
+	.rn_Mobile_ClosedMenu{
+		display: none;
+	}
+	a.rn_Mobile_ClosedMenu  { 
+	    font-family: FontAwesome;
+	    content: '\f0da';
+	    font-size: 13px!important; 
+	    display: inline-block; 
+	    background-image: url("/euf/assets/themes/standard/images/icons/bissell/caret_right_solid.svg");
+	    background-repeat: no-repeat;
+	}
+	
+	img.rn_Mobile_OpenMenu.rn_Mobile_SelectedMenu.rn_Mobile_downArrow {
+	    height: 20px;
+	    float: left;
+	    width: 30px;
+	}
+	span.rn_Mobile_AriaHidden {
+	    visibility: hidden;
+	}
+	
+	a.rn_Mobile_OpenMenu, a.rn_Mobile_ClosedMenu
+	{
+	   font-size:0;
+	}
+	
+	.rn_Mobile_AriaHeaderMobile.rn_Mobile_ProductCategoryList  .rn_Mobile_ProductCategorySubItem a {
+		color: #231f20;
+		/*padding-left: 10px;*/
+		margin-left: -10px;
+	}
+	.rn_Mobile_AriaHeaderMobile.rn_Mobile_ProductCategoryList  li.rn_Mobile_ProductCategorySubItem2 {
+		padding: 8px 0px;
+	}
+	.rn_Mobile_AriaHeaderMobile.rn_Mobile_ProductCategoryList  .rn_Mobile_ProductCategorySubItem2 a {
+		color: #231f20;
+		margin-left: 40px;
+	}
+	li.rn_Mobile_ProductCategorySubItem {
+		width: 92%;
+		border-bottom: 1px solid white;
+	}
+	li.rn_Mobile_ProductCategorySubItem2 {
+		border-bottom: 1px solid white;
+	}
+	li.rn_Mobile_ProductCategorySubItem2:last-child{
+		border-bottom: 0px;
+	}
+	a.menu-link {
+    	color: white;
+	}
+	a#rn_Mobile_productLink {
+   		color: white;
+	}	
+
+}

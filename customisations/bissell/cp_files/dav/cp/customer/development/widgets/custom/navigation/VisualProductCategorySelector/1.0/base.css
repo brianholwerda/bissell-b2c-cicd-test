@@ -1,0 +1,56 @@
+/**
+ * base.css: Base CSS for VisualProductCategorySelector
+ */
+.rn_VisualProductCategorySelector .rn_Item .rn_ImageContainer img {
+	background: transparent;
+}
+
+.rn_VisualProductCategorySelector .rn_ItemPagination li.rn_ItemPaginationPrevious {
+	float: left;
+    margin-top: -130px;
+}
+.rn_VisualProductCategorySelector .rn_ItemPagination li.rn_ItemPaginationForward {
+	float: right;
+    margin-top: -130px;
+}
+.rn_VisualProductCategorySelector .rn_ItemGroup:before, .rn_VisualProductCategorySelector .rn_ItemGroup:after{
+	visibility: hidden;
+}
+.rn_VisualProductCategorySelector .rn_ItemGroup:after{
+	visibility: hidden;
+}
+.rn_VisualProductCategorySelector .rn_ItemGroup:before, .rn_VisualProductCategorySelector .rn_ItemGroup:after{
+	visibility: hidden;
+}
+.rn_ScreenReaderOnly{
+	visibility: hidden;
+}
+.rn_HomeSubProductDisplayHead {
+	text-align: left;
+}
+#rn_HomeProductDisplay .rn_VisualProductCategorySelector .rn_ItemGroup {
+	position:relative;
+	width: 96%;
+	margin: 0 auto;
+}
+.rn_HomeProductDisplayHead {
+	width: 98%;
+	margin: 8px auto 16px;
+}
+.rn_VisualProductCategorySelector .rn_Item .rn_ActionContainer {
+	padding-top: 8px;
+}
+#rn_HomeProductDisplay .rn_VisualProductCategorySelector .rn_ProdSelected {
+	border: 1px solid #00205B;
+	box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
+	border-radius: 10px;
+}
+#rn_HomeProductDisplay .rn_VisualProductCategorySelector .rn_Item {
+	margin-bottom: 0px;
+	padding-bottom: 16px;
+}
+#rn_HomeProductDisplay .rn_VisualProductCategorySelector .rn_Item.rn_ProdSelected {
+	border-bottom: 3px solid #00205B;
+	box-shadow: none;
+	border-radius: 0px;
+}

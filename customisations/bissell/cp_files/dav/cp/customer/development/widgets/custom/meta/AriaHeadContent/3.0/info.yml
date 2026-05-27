@@ -1,0 +1,13 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  referring_url:
+    name: referring_url
+    type: string
+    description: URL that will be used to redirect users to the correct bissell.com
+      website
+    default: //www.bissell.com
+    required: false

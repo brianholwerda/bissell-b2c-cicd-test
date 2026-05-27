@@ -1,0 +1,170 @@
+/**
+ * base.css: Base CSS for ProductCategoryLeftNav
+ */
+.chevronRight {
+	 float: left;
+	 display: inline-block;
+	 position: relative;
+}
+.chevronLeft {
+	 float: right;
+	 display: inline-block;
+	 position: relative;
+ }
+  .rn_ProductCategoryLeftNav.rn_ProductCategoryList .rn_ProductCategorySubItem a{
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.5px;
+    text-align: left;
+    color: #133F7A!important;
+    margin-left: 0px!important;
+ }
+ .rn_ProductCategoryLeftNav.rn_ProductCategoryList .rn_ProductCategorySubItem2 a{
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 20px;
+	letter-spacing: 0.5px;
+	text-align: left;
+	color: #000000;
+	margin-left: 0px!important;
+ }
+li.rn_Mobile_ProductCategorySubItem {
+	float: left;
+	width: 100%;
+}
+li.rn_ProductCategorySubItem {
+	width: 28%;
+	float: left;
+	display: inline-block;
+	position: relative;
+	margin-right: 24px;
+	margin-bottom: 30px;
+}
+/* li#subItem_58960 {
+    float: left;
+    width: 28%;
+}
+
+li#subItem_58962 {
+    float: left;
+    width: 38%;
+}
+
+li#subItem_58961 {
+    float: right;
+    width: 23%;
+}
+
+li#subItem_67168 {
+    float: left;
+    width: 38%;
+    margin-top: 3%;
+}
+
+li#subItem_67171 {
+    float: left;
+    width: 28%;
+    margin-top: 3%;
+   
+}
+li#subItem_58945 {
+    float: left;
+    width: 32%;
+}
+li#subItem_58944 {
+   float: right;
+    width: 31%;
+}
+li#subItem_67157{
+	float: left;
+    width: 28%;
+    margin-top: 3%;
+
+}
+li#subItem_58943 {
+   float: left;
+    width: 28%;
+}
+li#subItem_58946 {
+    float: left;
+    width: 32%;
+    margin-top: 3%;
+
+} */
+.rn_ProductCategoryLeftNav.rn_ProductCategoryList {
+	/*width: 30%;
+	position: relative;
+	float:left;
+	display:inline-block;*/
+}
+.rn_ListColumns{
+	margin-top: 2%;
+	margin-left: 3%;
+}
+.rotate{
+	transform: rotate(90deg);
+}
+
+a.rn_OpenMenu  { 
+    /*font-family: FontAwesome; 
+	content: '\f0d7';
+    font-size: 13px!important; 
+    display: inline-block; 
+    background-image:url("/euf/assets/themes/standard/images/icons/bissell/caret_down_solid.svg");
+    background-repeat: no-repeat;*/
+    
+}
+.rn_ClosedMenu{
+	/*display: none;*/
+}
+a.rn_ClosedMenu  { 
+   /* font-family: FontAwesome;
+   content: '\f0da';
+    font-size: 13px!important; 
+    display: inline-block; 
+    background-image: url("/euf/assets/themes/standard/images/icons/bissell/caret_right_solid.svg");
+    background-repeat: no-repeat;*/
+}
+
+img.rn_OpenMenu.rn_SelectedMenu.rn_downArrow {
+    height: 20px;
+    float: left;
+    width: 30px;
+}
+span.rn_AriaHidden {
+    visibility: hidden;
+}
+
+a.rn_OpenMenu, a.rn_ClosedMenu
+{
+   font-size:0;
+}
+
+.rn_ProductCategoryLeftNav.rn_ProductCategoryList  .rn_ProductCategorySubItem a {
+	color: #231f20;
+	/*padding-left: 10px;*/
+	margin-left: -10px;
+}
+.rn_ProductCategoryLeftNav.rn_ProductCategoryList  li.rn_ProductCategorySubItem2 {
+	padding: 16px 0px 0px;
+}
+.rn_ProductCategoryLeftNav.rn_ProductCategoryList  .rn_ProductCategorySubItem2 a {
+	color: #231f20;
+	margin-left: 40px;
+}
+@media all and (max-width : 991px) {
+	/**** PRODUCT DETAIL  ****/
+	.rn_ProductCategoryLeftNav.rn_ProductCategoryList  li.rn_ProductCategorySubItem {
+		font-size: 12px;
+	}
+
+	
+}
+@media all and (max-width : 767px) {
+	.rn_ProductCategoryLeftNav.rn_ProductCategoryList {
+		display: none;
+		width: 0%;
+	}
+	
+}

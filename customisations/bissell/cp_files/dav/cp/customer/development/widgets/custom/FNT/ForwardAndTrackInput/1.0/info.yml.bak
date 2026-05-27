@@ -1,0 +1,30 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  fnt_validate_token:
+    name: fnt_validate_token
+    type: ajax
+    description: Default AJAX endpoint that loads the validates the token and displays
+      the view!
+    default: /ci/ajax/widget
+    required: false
+  loading_label:
+    name: loading_label
+    type: string
+    description: The label that appears while new results are loading into the display.
+    default: Loading...
+    required: false
+info:
+  description: Allows Forward aNd Track updates!
+  urlParameters:
+    i_id:
+      name: Incident ID
+      description: The Incident ID
+      example: i_id/
+    fnt_tok:
+      name: FNT Token
+      description: The FNT token.
+      example: fnt_tok/

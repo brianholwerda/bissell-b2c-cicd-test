@@ -1,0 +1,36 @@
+/**
+ * base.css: Base CSS for ObscureEmail
+ */
+.rn_SpecialAlert {
+	margin-top: 8px;
+}
+.rn_SpecialAlertDivContent {
+	max-width: 1410px;
+	margin: 0 auto;
+}
+.rn_SpecialAlertHeading {
+	width: 100%;
+}
+.rn_SpecialAlertDivText {
+	width: 95%;
+	float:left;
+	position:relative;
+	display: inline-block;
+}
+.rn_SpecialAlertCloseButtonDiv {
+	width: 5%;
+	float:right;
+	position:relative;
+	display:inline-block;
+	margin-top: -12px;
+}
+.rn_SpecialAlert .rn_SpecialAlertCloseButton, .rn_SpecialAlert .rn_SpecialAlertCloseButton:focus, .rn_SpecialAlert .rn_SpecialAlertCloseButton:hover {
+	background-image: url(/euf/assets/images/announcement-close.png );
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 12px;
+    width: 12px;
+    border: none;
+    box-shadow: none;
+}

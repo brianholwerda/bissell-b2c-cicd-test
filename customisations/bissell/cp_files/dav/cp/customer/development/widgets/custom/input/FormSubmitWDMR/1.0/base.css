@@ -1,0 +1,118 @@
+/**
+ * base.css: Base CSS for FormSubmitWDMR
+ */
+.rn_FormSubmitWDMR.rn_FormSubmit {
+}
+.rn_FormSubmitWDMR {
+	width: 50%;
+    display: inline-block;
+    float: left;
+}
+.rn_WDMRform .rn_FormSubmit button {
+	/* font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding: 0.5rem 1rem;
+    font-size: 14px !important;
+    line-height: 1.5;
+    border-radius: 5px;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    color: #fff;
+    background-color: #0078a8;
+    border-color: #0078a8;
+    box-shadow: 0 0 0 transparent;
+    font-family: montserrat,sans-serif;
+    text-decoration: none;
+    border-color: #0078a8; */
+    position: relative;
+    float: left;
+    width: 50%;
+    font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding: 0.5rem 1rem;
+    font-size: .875rem !important;
+    line-height: 1.5;
+    border-radius: 5px;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    color: #fff;
+    background-color: #0078a8;
+    border-color: #0078a8;
+    box-shadow: 0 0 0 transparent;
+    font-family: montserrat,sans-serif;
+    text-decoration: none;
+    border-color: #0078a8;
+    margin-right: 10px;
+    min-height: 40px;
+    margin-left: 0px;
+    min-width: 200px;
+    max-width: 200px;
+}
+.rn_CustomButton .rn_CustomButtonButtons div.rn_WDMR_cancel {
+    min-width: 200px;
+    max-width: 200px;
+}
+@media all and (max-width : 767px) {
+	.rn_WDMRform .rn_FormSubmit button {
+		/* font-weight: 700;
+	    text-align: center;
+	    vertical-align: middle;
+	    -webkit-user-select: none;
+	    -moz-user-select: none;
+	    -ms-user-select: none;
+	    user-select: none;
+	    padding: 0.5rem 1rem;
+	    font-size: 14px !important;
+	    line-height: 1.5;
+	    border-radius: 5px;
+	    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+	    color: #fff;
+	    background-color: #0078a8;
+	    border-color: #0078a8;
+	    box-shadow: 0 0 0 transparent;
+	    font-family: montserrat,sans-serif;
+	    text-decoration: none;
+	    border-color: #0078a8; */
+	    position: relative;
+	    float: left;
+	    width: 50%;
+	    font-weight: 700;
+	    text-align: center;
+	    vertical-align: middle;
+	    -webkit-user-select: none;
+	    -moz-user-select: none;
+	    -ms-user-select: none;
+	    user-select: none;
+	    padding: 0.5rem 1rem;
+	    font-size: .875rem !important;
+	    line-height: 1.5;
+	    border-radius: 5px;
+	    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+	    color: #fff;
+	    background-color: #0078a8;
+	    border-color: #0078a8;
+	    box-shadow: 0 0 0 transparent;
+	    font-family: montserrat,sans-serif;
+	    text-decoration: none;
+	    border-color: #0078a8;
+	    margin-right: 10px;
+	    min-height: 40px;
+	    margin-left: 0px;
+	    min-width: 200px;
+	    max-width: 200px;
+	}
+}
+
+@media all and (max-width : 767px) {
+	.rn_FormSubmitWDMR {
+		width: 100%;	
+	}
+}

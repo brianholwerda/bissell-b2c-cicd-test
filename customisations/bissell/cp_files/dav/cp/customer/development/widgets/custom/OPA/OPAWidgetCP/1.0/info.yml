@@ -1,0 +1,37 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  web_determinations_url:
+    name: web_determinations_url
+    type: string
+    description: The full path to Web Determinations, eg https://servername/web-determinations
+    default: ""
+    required: true
+  policy_model:
+    name: policy_model
+    type: string
+    description: The name of the policy model to load. This must match the name of
+      a policy model that has been deployed to Web Determinations for the corresponding
+      Hub instance.
+    default: ""
+    required: true
+  init_id:
+    name: init_id
+    type: string
+    description: The ID (primary key) of the input data context for preseeding. This
+      corresponds to the ID of an object mapped to global in the OPA data mapping.
+      If this attribute is omitted, data will only be preseeded from the Contact object.
+    default: ""
+    required: false
+  locale:
+    name: locale
+    type: string
+    description: The locale to use during the interview. This locale must be defined
+      within the policy model.
+    default: ""
+    required: false
+info:
+  description: This widget displays an Oracle Policy Automation interview in an IFRAME

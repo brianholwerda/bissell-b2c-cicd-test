@@ -1,0 +1,218 @@
+/
+ * base.css: Base CSS for CustProdList
+ */
+.rn_CustProdList {
+
+}
+.rn_CustProdList .rn_ProdDetailSimilar {
+	width: 60%;
+    float: left;
+    margin-top: 16px;
+}
+#rn_ProdDetailImage {
+	display: block;
+	padding-right: 24px;
+}
+#rn_ProdDetailImage_mobile {
+	display:none;
+}
+.rn_CustProdList .grid-container {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-template-rows: repeat(2, 1fr);
+	grid-column-gap: 0px;
+	grid-row-gap: 0px;
+	margin: auto;
+	margin-top: 3vh;
+	margin-bottom: 0px;
+	max-width: 800px;
+}
+.rn_CustProdList .grid-container .grid-item{
+	position: relative;
+	border: 1px solid #C4C4C4;
+	padding-bottom: 1px;
+}
+.rn_CustProdList .grid-container .grid-item .rn_CallToActionBox.rn_ProdDetailRegister
+{
+	width: auto;
+	margin: auto;
+	position: relative;
+	float: none;
+}
+
+.rn_CustProdList .grid-container .grid-item .rn_CallToActionBox.rn_ProdDetailRegister * {
+	text-align: center;
+	padding: 0px 0px 5px 3px;
+	min-height: auto;
+}
+.rn_CustProdList .rn_ProductSupportNav {
+	display: inline;
+	margin-top: 1rem;
+}
+
+.rn_CustProdList .rn_ProdDetailSimilar{
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 17px;
+	color: #010101;
+}
+#similar-model-years {
+	word-spacing: 10px;
+}
+.rn_CustProdList .instructional-guide{
+	text-align: center;
+	justify-content: center;
+	padding-bottom: 16px
+
+}
+.rn_CustProdList .grid-container .grid-item .rn_CallToActionBox.rn_ProdDetailRegister .rn_ImageContainer {
+	width: 100%;
+	margin: 0 auto;
+}
+.rn_CustProdList .grid-container .grid-item .rn_CallToActionBox.rn_ProdDetailRegister .rn_ImageContainer img {
+	height: 100%;
+	width: 100%;
+	max-height: 64px;
+	max-width: 64px;
+	min-height: 64px;
+	min-width: 64px;
+}
+.rn_ProductSupportNav .rn_link_divider {
+	padding: 0px 16px;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 20px;
+	color: #011F5A;
+}
+.rn_ProductSupportNav .rn_link_divider_noBorder {
+	padding: 0px 16px;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 20px;
+	color: #011F5A;
+	border-right: 0px;
+}
+.rn_CustProdList .rn_product-top-section {
+	float: left;
+    width: 100%;
+    display: block;
+    position: relative;
+    border-bottom: 1px solid #C4C4C4;
+    padding-bottom: 8px;
+    margin-bottom: 32px;
+}
+@media all and (max-width : 767px) {
+	.rn_CustProdList .rn_ProdDetailSimilar {
+		width: 100%;
+	    float: left;
+	    margin-top: 20px;
+	    margin-left: 0px;
+	}
+	#rn_ProdDetailImage {
+		display: none;
+	}
+	#rn_ProdDetailImage_mobile {
+		display: block;
+	}
+	.rn_CallToActionButton2.rn_ProdDetailRegister.rn_CallToActionBox25 {
+		border-left: 0px;
+	}
+	.rn_CustProdList .grid-container {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		grid-template-rows: repeat(2, 1fr);
+		grid-column-gap: 6px;
+		grid-row-gap: 6px;
+		max-width: 800px;
+		margin: auto;
+		margin-top: 3vh;
+		margin-bottom: 0px;
+		border-top: none;
+		border-left: none;
+	}
+	.rn_CustProdList .grid-item{
+		position: relative;
+		border-top: 1px solid #C4C4C4;
+		border-left: 1px solid #C4C4C4;
+		border-right: 1px solid;
+	  border-bottom: 1px solid;
+	}
+	.instructional-guide{
+		font-weight: 600;
+		font-size: 21px;
+		line-height: 26px;
+		color: #333333;
+		margin-top: 0px;
+		border-top:	none;
+		padding-top: 0px;
+	}
+	.rn_ProductSupportNav img {
+		display: none;
+	}
+	.rn_ProductSupportNav
+	{
+		float: none;
+	}
+	.rn_ProductSupportNav a  {
+		display: block;
+	}
+	#rn_h2-InstructionalGuide{
+		display:none;
+	}
+	#rn_ProdDetailImage.rn_floatLeft{
+		display: none;
+	}
+
+	#rn_ProdDetailImage_mobile{
+		display: block;
+		margin: auto;
+		margin-bottom: 10px;
+	}
+	#rn_ProdDetailImage_mobile > img{
+		display: block;
+		margin: auto;
+	}
+	.rn_ProductSupportNav a  {
+		border-right: none;
+		border-bottom: 1px solid #C4C4C4;
+		margin-top: 8px;
+		padding-bottom: 8px;
+		font-weight: 400;
+		font-size: 14px;
+		line-height: 17px;
+		color: #011F5A;
+	}
+	.rn_ProductSupportNav .rn_link_divider, .rn_ProductSupportNav .rn_link_divider_noBorder {
+		padding: 0px;
+	}
+	.rn_ProductCategoryBreadcrumbHome {
+		margin-left: -5px;
+	}
+	.rn_ProductSupportNav a::after {
+	    background-image: url(/euf/assets/themes/standard-ext/images/rightarrow.png);
+	    background-repeat: no-repeat;
+	    margin: auto;
+	    border: 0px solid transparent;
+	    float: right;
+	    background-size: 7px 13px;
+	    display: inline-block;
+	    width: 8px;
+	    height: 16px;
+	    content: "";
+	}
+	.rn_ProdDetailSimilar{
+		font-weight: 400;
+		font-size: 14px;
+		line-height: 17px;
+		color: #3F3F3F;
+	}
+	.rn_CustProdList .grid-container {
+		float: left;
+	    max-width: unset;
+	    width: 100%;
+	}
+	.rn_CustProdList .rn_product-top-section {
+		border-bottom: 0px solid #C4C4C4;	
+	}
+	
+}

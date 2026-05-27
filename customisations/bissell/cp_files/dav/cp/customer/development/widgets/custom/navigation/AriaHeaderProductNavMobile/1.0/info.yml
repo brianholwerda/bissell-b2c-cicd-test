@@ -1,0 +1,23 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  max_levels:
+    name: max_levels
+    type: int
+    description: The number of levels to display
+    default: ~
+    required: false
+  hide_top_levl:
+    name: hide_top_levl
+    type: boolean
+    description: true false to hide the first level
+    default: true
+    required: false
+extends:
+  widget: standard/search/ProductCategoryList
+  components:
+  - php
+  overrideViewAndLogic: "true"

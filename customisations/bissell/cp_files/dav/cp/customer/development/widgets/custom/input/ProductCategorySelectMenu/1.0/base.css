@@ -1,0 +1,18 @@
+/**
+ * base.css: Base CSS for ProductCategorySelectMenu
+ */
+.rn_ProductCategorySelectMenu {
+    margin: 15px 0 15px 0;
+}
+.chosen-product {
+    /*width: 100% !important;*/
+    margin: 0px 3px;
+}
+
+.selectionLimit{
+	margin-left: 20px;
+}
+
+.selectionLimitContainer, .finalProdCatID {
+	display:none;
+}

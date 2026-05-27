@@ -1,0 +1,115 @@
+/**
+ * base.css: Base CSS for AriaHeader
+ */
+ #rn_DevelopmentHeaderPanel { display:none !important;}
+@media all and (max-width : 960px) {
+	#rn_desktopHeaderDisplay {
+    	display: none;
+	}
+	.rn_BissellNav {
+		height: 100%;
+	}
+	.rn_header_mobile, .rn_header {
+		height: 75px;
+	}
+	.rn_Mobile_mainmenu {
+		z-index: 1;
+		position: relative;
+		margin-top: 22px;
+	}
+	.rn_Mobile_mainmenu .row {
+		height: 100vh;
+	}
+	#rn_Mobile_productNav {
+		height: 100vh;
+		width: 100vw;
+
+	}
+	div#rn_rightLogo {
+		width: auto;
+		padding-top: 12px;
+	}
+	div#rn_rightLogo img {
+		height: 60%;
+		width: 60%;
+	}
+	.rn_SupportText {
+		margin-top: -10px;
+	}
+	.hamburger-header-container {
+		margin-top: 20px;
+		height: 100%;
+		
+	}
+	#rn_hamburgerToggle {
+		background-color: #00205B;
+		color: #fff;
+	}
+	.rn_AriaHeader {
+	}
+	.skip{
+		visibility:hidden
+	}
+	.sr-only{
+		visibility:hidden
+	}
+	.rn_BissellNav{
+		background:#00205B;
+	}
+	.rn_Mobile_ListColumns {
+		margin-top: 0px;
+		margin-left: 4px;
+	}
+	.navbar{
+		background: #00205B;
+	    min-width: 385px;
+	    padding: 0px 0px 12px 16px;
+	    line-height: 50px;
+	    margin-top: 0px;
+	}
+	ul.navbar-nav li {
+		padding-left: 4px;
+	}
+	ul.navbar-nav li img.rn_chevronLeft {
+		position: relative;
+	    /* margin-top: 3px; */
+	    top: 3px;
+	    /* right: 9px; */
+	    float: right;
+	    display: inline;
+	    margin-top: 12px
+	}
+	ul.navbar-nav li.menu-item-first {
+		margin-top: 12px;
+	}
+	.rn_lineBreak{
+		margin-top: 5px;
+	    margin-bottom: 5px;
+	    border-bottom: 1px solid white;
+	    width: 100%;
+	    float: left;
+	}
+	.rn_lineBreakSub{
+		margin-top: 5px;
+	    margin-bottom: 5px;
+	    border-bottom: 1px solid white;
+	    width: 90%;
+		
+	}
+	img.rn_chevronRight {
+	    left: 70px;
+	    position: relative;
+	    top: 4px;
+	}
+	img.rn_chevronLeft {
+	    position: relative;
+	    top: 3px;
+	    right: 9px;
+	}
+}
+@media all and (max-width : 480px) {
+	#rn_Mobile_productNav {
+		height: 100vh;
+		width: 100vw;
+	}
+}

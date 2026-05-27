@@ -1,0 +1,36 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  combined_results:
+    name: combined_results
+    type: option
+    description: Indicates whether the widget should report results for Social results;
+      intended to be used in conjunction with CombinedSearchResults
+    options:
+    - "null"
+    - all
+    - social
+    default: "null"
+    required: false
+  result_headline:
+    name: result_headline
+    type: string
+    description: The headline to display if there are results returned.
+    default: ""
+    required: false
+  show_rss:
+    name: show_rss
+    type: boolean
+    description: Toggles the display of the RSS feed on the headline
+    default: false
+    required: false
+info:
+  description: This widget simply adds a section headline to the result div if there
+    are results.
+extends:
+  widget: standard/reports/ResultInfo
+  components:
+  - view

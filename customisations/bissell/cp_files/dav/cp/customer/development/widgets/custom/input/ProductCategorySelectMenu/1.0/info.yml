@@ -1,0 +1,124 @@
+version: "1.0"
+requires:
+    jsModule:
+        - standard
+        - mobile
+attributes:
+    display_type:
+        name: display_type
+        description: This option designates the way the product or category options are displayed.
+        default: Menu
+        type: OPTION
+        options:
+            - Menu
+            - List
+            - Images
+    top_level_ids:
+        name: top_level_ids
+        type: string
+        description: The top level ID for the sub products or categories to be listed in the first menu
+        default: null
+        required: false
+    show_ids:
+        name: show_ids
+        type: string
+        description: Comma separated list of ID's to show.  If this is defined, only the defined prod/cat ID's will be displayed.  There is no need to place these ID's in order, but at least one top level ID (according to the starting_level_id defined) must be defined in order to populate the first menu with a selectable option.
+        default: 
+        required: false
+    table:
+        name: table
+        type: string
+        description: Name of the table this widget is being used for
+        default: rn:msg:INCIDENT_LBL
+        required: false
+    name:
+        name: name
+        type: string
+        description: Name of the object in use
+        default: rn:msg:PRODUCT_LBL
+        required: false
+    prefix:
+        name: prefix
+        type: string
+        description: Prefix for ID's and name element attributes to uniquely identify this widget
+        default: "rn"
+        required: false
+    required:
+        name: required
+        type: boolean
+        description: Boolean, indicates whether this should be a required field for the form.
+        default: false
+        required: false
+    disable_chosen_search:
+        name: disable_chosen_search
+        type: boolean
+        description: Enables the search functionality in the select menu.  While the user searches, the selectable options are trimmed to match the search term.
+        default: true
+        required: false
+    placeholder:
+        name: placeholder
+        type: string
+        description: Initial text displayed in the dropdown menu
+        default:
+        required: false
+    default_label:
+        name: default_label
+        type: string
+        description: Label for the form element
+        default:
+        required: false
+    final_selection_label:
+        name: final_selection_label
+        type: string
+        description: Notification displayed to inform the user that they have selected the last possible product or category.  Use <name> to insert the name of the object referenced (ie. "Final <name> selected" will display "Final Category Selected").
+        default: Final <name> has been selected
+        required: false
+    validation_label:
+        name: validation_label
+        type: string
+        description: Label for the form field validation
+        default:
+        required: false
+    hierarchy_depth:
+        name: hierarchy_depth
+        type: int
+        description: The number of levels deep into the product or category hierarchy to provide menus.
+        default: 1
+        required: false
+    starting_level_id:
+        name: starting_level_id
+        type: int
+        description: The prod/cat ID to begin the first menu if not the top level
+        default: 0
+        required: false
+    incident_product_chain:
+        name: incident_product_chain
+        type: string
+        description: Comma separated heirarchy to designate the preset value of the menu upon initially loading
+        default:
+        required: false
+    ajax_model:
+        name: ajax_model
+        type: string
+        description: The location of the model to be used for ajax methods.
+        default: standard/prodcat
+        required: false
+    maximum_top_levels:
+        name: rn:msg:MAXIMUM_TOP_LEVELS_LBL
+        type: INT
+        description: rn:msg:MAX_TOP_LVL_PROD_SLASH_CAT_DISP_LBL
+        default: 30
+        min: 1
+        max: 30
+    max_shown_results:
+        name: max_shown_results
+        type: INT
+        description: Maximum results to show (applies to all menus)
+        default: 100
+        required: false
+    auto_redirect_url:
+        name: auto_redirect_url
+        type: string
+        description: If this is set, the form will auto redirect to this URL after final selection.
+        default: 
+        required: false

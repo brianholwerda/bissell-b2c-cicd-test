@@ -1,0 +1,12 @@
+/**
+ * base.css: Base CSS for TextInputDynamic
+ */
+.rn_TextInputDynamic.rn_TextInput {
+	
+
+}
+.rn_TextInput textarea {
+	height: 160px;
+	padding-top: 10px;
+	padding-bottom: 20px;
+}

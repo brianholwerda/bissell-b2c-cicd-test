@@ -1,0 +1,16 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  show_excerpt:
+    name: show_excerpt
+    type: boolean
+    description: Determines whether or not to show a small excerpt of each result
+    default: false
+    required: false
+extends:
+  widget: standard/reports/TopAnswers
+  components: []
+  overrideViewAndLogic: "true"

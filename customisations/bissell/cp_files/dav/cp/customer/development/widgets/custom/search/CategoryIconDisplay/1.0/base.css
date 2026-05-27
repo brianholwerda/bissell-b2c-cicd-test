@@ -1,0 +1,30 @@
+/**
+ * base.css: Base CSS for TopQuestionsByCategory
+ */
+.rn_TopQuestionsByCategory.rn_ProductCategoryList {
+	/*display: inline-block;*/
+}
+
+.rn_TopQuestionsByCategory .rn_HierList {
+	/* margin-bottom: 25px; */
+	/* padding-right: 20px; */
+	text-align: center;
+}
+
+.rn_HierList
+{
+	font-size: 11px;
+}
+
+h3
+{
+	font-size: 11px!important;
+}
+
+h3#rn_ProductHeader_2
+{
+	padding-left: 15px;
+}
+
+
+

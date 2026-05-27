@@ -1,0 +1,32 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+attributes:
+  fnt_validate_token:
+    name: fnt_validate_token
+    type: ajax
+    description: Default AJAX endpoint that loads the validates the token and displays
+      the view!
+    default: /ci/ajax/widget
+    required: false
+  fnt_upload:
+    name: fnt_upload
+    type: ajax
+    description: Default AJAX endpoint that loads a potential attachment!
+    default: /ci/ajax/widget
+    required: false
+  read_only:
+    name: read_only
+    type: boolean
+    description: When set to true this will load the read only page for the edit ejs.
+    default: false
+    required: false
+info:
+  description: Allows Forward aNd Track updates!
+  urlParameters:
+    fnttok:
+      name: FNT.Config.ResponseFrom
+      description: The FNT token
+      example: FNT.Config.ResponseFrom/abdhasuenasas

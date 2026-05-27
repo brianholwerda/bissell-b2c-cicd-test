@@ -1,0 +1,24 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+  yui:
+  - panel
+  - overlay
+  - gallery-treeview
+  - RightNowTreeView
+  - RightNowTreeViewDialog
+  - RightNowTreeViewDropdown
+attributes:
+  display_as_select:
+    name: display_as_select
+    type: boolean
+    description: Defaults to TRUE to display as SELECT elements instead of YUI tree
+    default: true
+    required: false
+extends:
+  widget: standard/input/ProductCategoryInput
+  components:
+  - view
+  - js

@@ -1,0 +1,57 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+extends:
+  widget: standard/reports/Multiline
+  components:
+  - view
+  - js
+  - css
+  - php
+attributes:
+  limit_column_lengths:
+    name: Limit Column Lengths
+    type: STRING
+    description: Limit columns to which length JSON format
+    default: '{}'
+  render_and_hide_column_indexes:
+    name: Render and Hide Column Indexes
+    type: STRING
+    description: Column indexes to render but hide, probably used for quiq-message-content
+    default: -1
+  send_message_column_index:
+    name: Send Message Column Index
+    type: INT
+    description: Column Index to add click listener to that will send message
+  message_column_index:
+    name: Quiq Message Column Index
+    type: INT
+    description: Report Column Index to send to Quiq on click
+    description: Column Index to add click listener to that will send message
+  message_content_length:
+    name: Quiq Message Length
+    type: INT
+    description: Length of text to include from the Column defined by Quiq Message Column Index
+    default: 100
+  message_link_separator:
+    name: Message Link Separator
+    type: STRING
+    description: Snippet that separates the message content and the link when clicking a link
+    default: '... Read more: '
+  show_message_column:
+    name: Show Message Column
+    type: BOOLEAN
+    description: Whether or not to show/hide the message column
+    default: false
+  append_links_to_message:
+    name: Append Links to Message
+    type: BOOLEAN
+    description: Whether or not to append links to message
+    default: true
+  show_send_full_button:
+    name: Show send full column button
+    type: BOOLEAN
+    description: Whether or not to show button
+    default: false

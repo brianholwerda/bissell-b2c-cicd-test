@@ -1,0 +1,16 @@
+version: "1.0"
+requires:
+  jsModule:
+  - standard
+  - mobile
+  yui:
+  - panel
+  - overlay
+  - gallery-treeview
+  - RightNowTreeView
+  - RightNowTreeViewDialog
+  - RightNowTreeViewDropdown
+extends:
+  widget: standard/input/ProductCategoryInput
+  components:
+  - js
