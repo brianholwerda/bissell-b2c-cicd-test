@@ -566,6 +566,7 @@ jobs:
             print(f"==========================================")
 
             cp_dir = f"customisations/{interface}/cp_files"
+            stats = {"uploaded": 0, "deleted": 0, "skipped": 0, "errors": 0}
 
             # Get diff between source and target branches
             result = subprocess.run(
@@ -607,6 +608,9 @@ jobs:
                 status_code = webdav_request(full_url, "PUT", file_path)
                 if status_code in [200, 201, 204]:
                   print(f"  Successfully uploaded: {webdav_path}")
+                elif status_code == 403:
+                  print(f"  WARNING: Skipped (permission denied): {webdav_path}")
+                  stats["skipped"] += 1
                 else:
                   print(f"  ERROR: Failed to upload {webdav_path} - Status: {status_code}")
                   exit(1)
