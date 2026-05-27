@@ -23,6 +23,21 @@ on:
         description: 'Story Numbers to Deploy (comma-separated e.g. ADO-5542,ADO-5601 - leave blank to use deploymentConfig.json)'
         required: false
         type: string
+      deploy_cp_bissell:
+        description: 'Deploy CP files for bissell interface?'
+        required: true
+        type: boolean
+        default: false
+      deploy_cp_bissell_uk:
+        description: 'Deploy CP files for bissell_uk interface?'
+        required: true
+        type: boolean
+        default: false
+      deploy_cp_bissell_de:
+        description: 'Deploy CP files for bissell_de interface?'
+        required: true
+        type: boolean
+        default: false
       skip_diff_review:
         description: 'Skip Diff Review Step? (not recommended for PROD)'
         required: true
@@ -42,6 +57,8 @@ jobs:
       target_branch: ${{ steps.set_branches.outputs.target_branch }}
       source_url: ${{ steps.set_branches.outputs.source_url }}
       target_url: ${{ steps.set_branches.outputs.target_url }}
+      target_uk_url: ${{ steps.set_branches.outputs.target_uk_url }}
+      target_de_url: ${{ steps.set_branches.outputs.target_de_url }}
       story_list: ${{ steps.set_stories.outputs.story_list }}
 
     steps:
@@ -58,6 +75,9 @@ jobs:
           echo "=========================================="
           echo "Source : $SOURCE"
           echo "Target : $TARGET"
+          echo "Deploy CP bissell    : ${{ github.event.inputs.deploy_cp_bissell }}"
+          echo "Deploy CP bissell_uk : ${{ github.event.inputs.deploy_cp_bissell_uk }}"
+          echo "Deploy CP bissell_de : ${{ github.event.inputs.deploy_cp_bissell_de }}"
           echo "=========================================="
 
           if [ "$SOURCE" == "$TARGET" ]; then
@@ -75,7 +95,7 @@ jobs:
             exit 1
           fi
 
-          echo "Environment combination is valid."
+          echo "Validation passed."
 
       - name: Set Branch and URL Values
         id: set_branches
@@ -102,14 +122,20 @@ jobs:
             TST1)
               echo "target_branch=tst1" >> $GITHUB_OUTPUT
               echo "target_url=bissell--tst1.custhelp.com" >> $GITHUB_OUTPUT
+              echo "target_uk_url=bissell-uk--tst1.custhelp.com" >> $GITHUB_OUTPUT
+              echo "target_de_url=bissell-de--tst1.custhelp.com" >> $GITHUB_OUTPUT
               ;;
             TST3)
               echo "target_branch=tst3" >> $GITHUB_OUTPUT
               echo "target_url=bissell--tst3.custhelp.com" >> $GITHUB_OUTPUT
+              echo "target_uk_url=bissell-uk--tst3.custhelp.com" >> $GITHUB_OUTPUT
+              echo "target_de_url=bissell-de--tst3.custhelp.com" >> $GITHUB_OUTPUT
               ;;
             PROD)
               echo "target_branch=main" >> $GITHUB_OUTPUT
               echo "target_url=support.bissell.com" >> $GITHUB_OUTPUT
+              echo "target_uk_url=support.bissell.co.uk" >> $GITHUB_OUTPUT
+              echo "target_de_url=support.bissell.de" >> $GITHUB_OUTPUT
               ;;
           esac
 
@@ -160,8 +186,6 @@ jobs:
           TARGET_BRANCH="${{ needs.validate.outputs.target_branch }}"
           STORIES="${{ needs.validate.outputs.story_list }}"
 
-          echo "Generating diff between $SOURCE_BRANCH and $TARGET_BRANCH..."
-
           git fetch origin "$SOURCE_BRANCH" "$TARGET_BRANCH"
 
           DIFF_CONTENT="<html><head><title>Diff Report</title>"
@@ -172,6 +196,9 @@ jobs:
             h3 { color: #999; }
             pre { background: #f6f8fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
             .summary { background: #f1f8ff; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+            .added { color: green; }
+            .removed { color: red; }
+            .modified { color: orange; }
           </style></head><body>"
 
           DIFF_CONTENT+="<h1>Deployment Diff Report</h1>"
@@ -182,10 +209,12 @@ jobs:
           DIFF_CONTENT+="<p><strong>Generated:</strong> $(date -u)</p>"
           DIFF_CONTENT+="</div>"
 
+          # EM Elements diff
+          DIFF_CONTENT+="<h2>EM Elements</h2>"
           IFS=',' read -ra STORY_ARRAY <<< "$STORIES"
           for STORY in "${STORY_ARRAY[@]}"; do
             STORY=$(echo "$STORY" | tr -d ' ')
-            DIFF_CONTENT+="<h2>Story: $STORY</h2>"
+            DIFF_CONTENT+="<h3>Story: $STORY</h3>"
 
             STORY_CONFIG="storyReferences/$STORY.json"
             if [ ! -f "$STORY_CONFIG" ]; then
@@ -193,20 +222,37 @@ jobs:
               continue
             fi
 
-            # List elements in story
             ELEMENTS=$(python3 -c "
           import json
           with open('$STORY_CONFIG') as f:
             data = json.load(f)
           for e in data.get('elements', []):
-            print(f\"  {e['interface']}/{e['type']}/{e['id']} - {e['name']}\")
+            print(f\"  {e['interface']}/{e['type']}/{e.get('id','')} - {e['name']}\")
             ")
-            DIFF_CONTENT+="<h3>Elements to be deployed:</h3><pre>$ELEMENTS</pre>"
+            DIFF_CONTENT+="<pre>$ELEMENTS</pre>"
+          done
 
-            # Show file diffs
-            CHANGED_FILES=$(git diff --name-only "origin/$TARGET_BRANCH" "origin/$SOURCE_BRANCH" -- "customisations/" "storyReferences/$STORY.json" 2>/dev/null || echo "")
-            if [ -n "$CHANGED_FILES" ]; then
-              DIFF_CONTENT+="<h3>Changed files:</h3><pre>$CHANGED_FILES</pre>"
+          # CP Files diff
+          DIFF_CONTENT+="<h2>CP File Changes</h2>"
+
+          for INTERFACE in bissell bissell_uk bissell_de; do
+            CP_DIR="customisations/$INTERFACE/cp_files"
+            CHANGED=$(git diff --name-status "origin/$TARGET_BRANCH" "origin/$SOURCE_BRANCH" -- "$CP_DIR" 2>/dev/null || echo "")
+
+            if [ -n "$CHANGED" ]; then
+              DIFF_CONTENT+="<h3>$INTERFACE</h3><pre>"
+              while IFS= read -r LINE; do
+                STATUS=$(echo "$LINE" | cut -f1)
+                FILE=$(echo "$LINE" | cut -f2)
+                case "$STATUS" in
+                  A) DIFF_CONTENT+="<span class='added'>ADDED: $FILE</span>\n" ;;
+                  D) DIFF_CONTENT+="<span class='removed'>DELETED: $FILE</span>\n" ;;
+                  M) DIFF_CONTENT+="<span class='modified'>MODIFIED: $FILE</span>\n" ;;
+                esac
+              done <<< "$CHANGED"
+              DIFF_CONTENT+="</pre>"
+            else
+              DIFF_CONTENT+="<h3>$INTERFACE</h3><p>No CP file changes detected.</p>"
             fi
           done
 
@@ -250,10 +296,10 @@ jobs:
           echo "=========================================="
 
   # -------------------------------------------------------
-  # Job 4 - Deploy to Target Environment
+  # Job 4 - Deploy EM Elements to Target Environment
   # -------------------------------------------------------
-  deploy:
-    name: Deploy to ${{ github.event.inputs.target_environment }}
+  deploy_em:
+    name: Deploy EM Elements to ${{ github.event.inputs.target_environment }}
     runs-on: ubuntu-latest
     needs: [validate, approval]
     environment: ${{ github.event.inputs.target_environment }}
@@ -297,7 +343,6 @@ jobs:
           }
 
           token = jwt.encode(payload, private_key, algorithm="RS256")
-
           auth_url = f"https://{b2c_url}/AgentWeb/api/elementmanager/authentication/authToken"
           interface_url = f"https://{b2c_url}/cgi-bin/bissell.cfg"
 
@@ -314,19 +359,17 @@ jobs:
             exit(1)
 
           print("USERSESSION token obtained successfully.")
-
           with open(os.environ["GITHUB_ENV"], "a") as f:
             f.write(f"USERSESSION={usersession}\n")
           PYEOF
 
-      - name: Deploy Stories to Target
+      - name: Deploy EM Elements
         run: |
           python3 << 'PYEOF'
           import json
           import time
           import base64
           import urllib.request
-          import urllib.error
           import os
 
           target_url = os.environ["TARGET_URL"]
@@ -350,18 +393,16 @@ jobs:
               time.sleep(5)
               try:
                 resp = em_request(url)
+                code = resp.get("status", {}).get("code")
+                desc = resp.get("status", {}).get("description")
+                print(f"  Status: {desc} (code: {code})")
+                if code == complete_code:
+                  return resp
+                if code in error_codes:
+                  print(f"ERROR: Operation failed: {desc}")
+                  exit(1)
               except Exception as e:
-                print(f"  WARNING: Poll attempt {attempt + 1} failed with error: {e} - retrying...")
-                continue
-              code = resp.get("status", {}).get("code")
-              desc = resp.get("status", {}).get("description")
-              print(f"  Status: {desc} (code: {code})")
-              if code == complete_code:
-                return resp
-              if code in error_codes:
-                print(f"ERROR: Operation failed with status: {desc}")
-                print(f"Full response: {json.dumps(resp, indent=2)}")
-                exit(1)
+                print(f"  WARNING: Poll attempt {attempt + 1} failed: {e} - retrying...")
             print("ERROR: Operation timed out")
             exit(1)
 
@@ -372,32 +413,30 @@ jobs:
 
             story_config_path = f"storyReferences/{story}.json"
             if not os.path.exists(story_config_path):
-              print(f"WARNING: No story config found for {story} - skipping.")
+              print(f"WARNING: No story config found for {story} - skipping EM elements.")
               continue
 
             with open(story_config_path) as f:
               story_data = json.load(f)
 
-            elements = story_data.get("elements", [])
-            print(f"Found {len(elements)} elements for story {story}")
+            elements = [e for e in story_data.get("elements", []) if e.get("type") != "CPFile"]
+            print(f"Found {len(elements)} EM elements for story {story}")
 
             for element in elements:
               elem_type = element["type"]
-              elem_id = element["id"]
+              elem_id = element.get("id", "")
               elem_name = element["name"]
-              zip_path = element["zipPath"]
+              zip_path = element.get("zipPath", "")
 
               print(f"  Deploying: {elem_type}/{elem_id} ({elem_name})")
 
-              if not os.path.exists(zip_path):
+              if not zip_path or not os.path.exists(zip_path):
                 print(f"  ERROR: ZIP file not found at {zip_path}")
                 exit(1)
 
-              # Read and base64 encode the ZIP
               with open(zip_path, "rb") as f:
                 zip_content = base64.b64encode(f.read()).decode()
 
-              # Step 1 - Create import package
               import_body = {
                 "name": f"{story}_{elem_type}_{elem_id}",
                 "packageContent": zip_content
@@ -411,7 +450,6 @@ jobs:
               import_id = import_resp.get("id")
               print(f"  Import package created with ID: {import_id}")
 
-              # Step 2 - Poll until prescan complete
               print("  Polling prescan status...")
               poll_status(
                 f"{base_url}/import/EMPackages/{import_id}",
@@ -420,20 +458,14 @@ jobs:
               )
               print("  Prescan complete.")
 
-              # Step 3 - Trigger import
               patch_body = {
                 "action": "import",
                 "id": str(import_id),
                 "permissions": []
               }
-              em_request(
-                f"{base_url}/import/EMPackages",
-                method="PATCH",
-                body=patch_body
-              )
+              em_request(f"{base_url}/import/EMPackages", method="PATCH", body=patch_body)
               print("  Import triggered.")
 
-              # Step 4 - Poll until import complete
               print("  Polling import status...")
               poll_status(
                 f"{base_url}/import/EMPackages/{import_id}",
@@ -443,7 +475,7 @@ jobs:
               print(f"  Successfully deployed: {elem_type}/{elem_id} ({elem_name})")
 
           print("==========================================")
-          print("All stories deployed successfully!")
+          print("All EM elements deployed successfully!")
           print("==========================================")
           PYEOF
 
@@ -461,23 +493,148 @@ jobs:
 
           echo "Target branch $TARGET_BRANCH updated successfully."
 
-      - name: Deployment Summary
+  # -------------------------------------------------------
+  # Job 5 - Deploy CP Files to Target Environment
+  # -------------------------------------------------------
+  deploy_cp:
+    name: Deploy CP Files to ${{ github.event.inputs.target_environment }}
+    runs-on: ubuntu-latest
+    needs: [validate, approval]
+    environment: ${{ github.event.inputs.target_environment }}
+    if: always() && (needs.approval.result == 'success' || github.event.inputs.skip_diff_review == 'true') && (github.event.inputs.deploy_cp_bissell == 'true' || github.event.inputs.deploy_cp_bissell_uk == 'true' || github.event.inputs.deploy_cp_bissell_de == 'true')
+
+    env:
+      TARGET_URL: ${{ needs.validate.outputs.target_url }}
+      TARGET_UK_URL: ${{ needs.validate.outputs.target_uk_url }}
+      TARGET_DE_URL: ${{ needs.validate.outputs.target_de_url }}
+      SOURCE_BRANCH: ${{ needs.validate.outputs.source_branch }}
+      TARGET_BRANCH: ${{ needs.validate.outputs.target_branch }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Deploy CP Files
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request
+          import urllib.error
+          import base64
+          import os
+          import subprocess
+
+          source_branch = os.environ["SOURCE_BRANCH"]
+          target_branch = os.environ["TARGET_BRANCH"]
+          target_url = os.environ["TARGET_URL"]
+          target_uk_url = os.environ["TARGET_UK_URL"]
+          target_de_url = os.environ["TARGET_DE_URL"]
+
+          username = "${{ secrets.B2C_CP_LOGIN_USER }}"
+          password = "${{ secrets.B2C_CP_LOGIN_PASS }}"
+          credentials = base64.b64encode(f"{username}:{password}".encode()).decode()
+
+          # Interface to URL mapping
+          interface_urls = {}
+          if "${{ github.event.inputs.deploy_cp_bissell }}" == "true":
+            interface_urls["bissell"] = target_url
+          if "${{ github.event.inputs.deploy_cp_bissell_uk }}" == "true":
+            interface_urls["bissell_uk"] = target_uk_url
+          if "${{ github.event.inputs.deploy_cp_bissell_de }}" == "true":
+            interface_urls["bissell_de"] = target_de_url
+
+          def webdav_request(url, method, file_path=None):
+            if method == "PUT" and file_path:
+              with open(file_path, "rb") as f:
+                data = f.read()
+              req = urllib.request.Request(url, data=data, method="PUT")
+              req.add_header("Content-Type", "application/octet-stream")
+            else:
+              req = urllib.request.Request(url, method=method)
+            req.add_header("Authorization", f"Basic {credentials}")
+            try:
+              with urllib.request.urlopen(req) as resp:
+                return resp.status
+            except urllib.error.HTTPError as e:
+              return e.code
+
+          for interface, webdav_url in interface_urls.items():
+            print(f"==========================================")
+            print(f"Deploying CP files for: {interface}")
+            print(f"Target URL: {webdav_url}")
+            print(f"==========================================")
+
+            cp_dir = f"customisations/{interface}/cp_files"
+
+            # Get diff between source and target branches
+            result = subprocess.run(
+              ["git", "diff", "--name-status",
+               f"origin/{target_branch}", f"origin/{source_branch}",
+               "--", cp_dir],
+              capture_output=True, text=True
+            )
+
+            if not result.stdout.strip():
+              print(f"No CP file changes detected for {interface}")
+              continue
+
+            changes = result.stdout.strip().split("\n")
+            print(f"Found {len(changes)} CP file changes for {interface}")
+
+            for change in changes:
+              parts = change.split("\t")
+              status = parts[0]
+              file_path = parts[1]
+
+              # Strip the cp_files prefix to get WebDAV path
+              webdav_path = file_path.replace(f"{cp_dir}/", "")
+              full_url = f"https://{webdav_url}/{webdav_path}"
+
+              if status == "D":
+                # Delete file
+                print(f"  DELETING: {webdav_path}")
+                status_code = webdav_request(full_url, "DELETE")
+                if status_code in [200, 204, 404]:
+                  print(f"  Successfully deleted: {webdav_path}")
+                else:
+                  print(f"  ERROR: Failed to delete {webdav_path} - Status: {status_code}")
+                  exit(1)
+              else:
+                # Upload file (Added or Modified)
+                action = "ADDING" if status == "A" else "UPDATING"
+                print(f"  {action}: {webdav_path}")
+                status_code = webdav_request(full_url, "PUT", file_path)
+                if status_code in [200, 201, 204]:
+                  print(f"  Successfully uploaded: {webdav_path}")
+                else:
+                  print(f"  ERROR: Failed to upload {webdav_path} - Status: {status_code}")
+                  exit(1)
+
+          print("==========================================")
+          print("All CP files deployed successfully!")
+          print("==========================================")
+          PYEOF
+
+      - name: CP Deployment Summary
         run: |
           echo "=========================================="
-          echo "Story Deployment Complete!"
-          echo "Source    : ${{ github.event.inputs.source_environment }}"
-          echo "Target    : ${{ github.event.inputs.target_environment }}"
-          echo "Stories   : $STORY_LIST"
-          echo "Timestamp : $(date -u)"
+          echo "CP File Deployment Complete!"
+          echo "Target : ${{ github.event.inputs.target_environment }}"
+          echo ""
+          echo "REMINDER: CP files have been deployed to"
+          echo "the Development area only. Promotion from"
+          echo "Development to Staging and Production must"
+          echo "be done manually through the CP UI."
           echo "=========================================="
 
   # -------------------------------------------------------
-  # Job 5 - Rollback (runs only if deploy fails)
+  # Job 6 - Rollback (runs only if deploy fails)
   # -------------------------------------------------------
   rollback:
     name: Rollback Deployment
     runs-on: ubuntu-latest
-    needs: deploy
+    needs: [deploy_em, deploy_cp]
     if: failure()
 
     steps:
