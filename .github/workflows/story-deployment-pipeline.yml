@@ -479,19 +479,7 @@ jobs:
           print("==========================================")
           PYEOF
 
-      - name: Update Target Branch in Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git fetch origin
-          git checkout "$TARGET_BRANCH"
-          git pull origin "$TARGET_BRANCH"
-          git merge "origin/$SOURCE_BRANCH" --no-ff \
-            -m "Deploy stories [$STORY_LIST] from ${{ github.event.inputs.source_environment }} to ${{ github.event.inputs.target_environment }} [$(date -u)]"
-          git push origin "$TARGET_BRANCH"
-
-          echo "Target branch $TARGET_BRANCH updated successfully."
 
   # -------------------------------------------------------
   # Job 5 - Deploy CP Files to Target Environment
@@ -633,12 +621,47 @@ jobs:
           echo "=========================================="
 
   # -------------------------------------------------------
-  # Job 6 - Rollback (runs only if deploy fails)
+  # Job 6 - Update Target Branch in Git
+  # -------------------------------------------------------
+  update_branch:
+    name: Update Target Branch in Git
+    runs-on: ubuntu-latest
+    needs: [validate, deploy_em, deploy_cp]
+    if: always() && (needs.deploy_em.result == 'success' || needs.deploy_em.result == 'skipped') && (needs.deploy_cp.result == 'success' || needs.deploy_cp.result == 'skipped')
+
+    env:
+      TARGET_BRANCH: ${{ needs.validate.outputs.target_branch }}
+      SOURCE_BRANCH: ${{ needs.validate.outputs.source_branch }}
+      STORY_LIST: ${{ needs.validate.outputs.story_list }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge Source into Target Branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin
+          git checkout "$TARGET_BRANCH"
+          git pull origin "$TARGET_BRANCH"
+          git merge "origin/$SOURCE_BRANCH" --no-ff \
+            -m "Deploy stories [$STORY_LIST] from ${{ github.event.inputs.source_environment }} to ${{ github.event.inputs.target_environment }} [$(date -u)]"
+          git push origin "$TARGET_BRANCH"
+
+          echo "Target branch $TARGET_BRANCH updated successfully."
+
+  # -------------------------------------------------------
+  # Job 7 - Rollback (runs only if deploy fails)
   # -------------------------------------------------------
   rollback:
     name: Rollback Deployment
     runs-on: ubuntu-latest
-    needs: [deploy_em, deploy_cp]
+    needs: [deploy_em, deploy_cp, update_branch]
     if: failure()
 
     steps:
