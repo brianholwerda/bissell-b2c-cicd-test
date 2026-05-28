@@ -1,0 +1,221 @@
+name: Deploy to Dev Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      story_number:
+        description: 'ADO Story Number (e.g. ADO-5542)'
+        required: true
+        type: string
+      interface:
+        description: 'Interface to deploy CP files for'
+        required: true
+        type: choice
+        options:
+          - bissell
+          - bissell_uk
+          - bissell_de
+      source_environment:
+        description: 'Dev Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - TST2
+          - TST1
+          - TST3
+
+jobs:
+  deploy_to_dev:
+    name: Deploy CP Files to ${{ github.event.inputs.source_environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.source_environment }}
+
+    env:
+      STORY_NUMBER: ${{ github.event.inputs.story_number }}
+      INTERFACE: ${{ github.event.inputs.interface }}
+      SOURCE_ENV: ${{ github.event.inputs.source_environment }}
+
+    steps:
+      # -------------------------------------------------------
+      # Step 1 - Validate Inputs
+      # -------------------------------------------------------
+      - name: Validate Inputs
+        run: |
+          echo "=========================================="
+          echo "Deploy to Dev Pipeline Starting"
+          echo "=========================================="
+          echo "Story Number : $STORY_NUMBER"
+          echo "Interface    : $INTERFACE"
+          echo "Environment  : $SOURCE_ENV"
+          echo "=========================================="
+
+          if [[ ! "$STORY_NUMBER" =~ ^ADO-[0-9]+$ ]]; then
+            echo "ERROR: Story number must be in format ADO-XXXX"
+            exit 1
+          fi
+
+          echo "Validation passed."
+
+      # -------------------------------------------------------
+      # Step 2 - Set Environment URL
+      # -------------------------------------------------------
+      - name: Set Environment URL
+        run: |
+          if [ "$INTERFACE" == "bissell_uk" ]; then
+            case "$SOURCE_ENV" in
+              TST2) echo "WEBDAV_URL=bissell-uk--tst2.custhelp.com" >> $GITHUB_ENV ;;
+              TST1) echo "WEBDAV_URL=bissell-uk--tst1.custhelp.com" >> $GITHUB_ENV ;;
+              TST3) echo "WEBDAV_URL=bissell-uk--tst3.custhelp.com" >> $GITHUB_ENV ;;
+            esac
+          elif [ "$INTERFACE" == "bissell_de" ]; then
+            case "$SOURCE_ENV" in
+              TST2) echo "WEBDAV_URL=bissell-de--tst2.custhelp.com" >> $GITHUB_ENV ;;
+              TST1) echo "WEBDAV_URL=bissell-de--tst1.custhelp.com" >> $GITHUB_ENV ;;
+              TST3) echo "WEBDAV_URL=bissell-de--tst3.custhelp.com" >> $GITHUB_ENV ;;
+            esac
+          else
+            case "$SOURCE_ENV" in
+              TST2) echo "WEBDAV_URL=bissell--tst2.custhelp.com" >> $GITHUB_ENV ;;
+              TST1) echo "WEBDAV_URL=bissell--tst1.custhelp.com" >> $GITHUB_ENV ;;
+              TST3) echo "WEBDAV_URL=bissell--tst3.custhelp.com" >> $GITHUB_ENV ;;
+            esac
+          fi
+
+      # -------------------------------------------------------
+      # Step 3 - Checkout Story Branch
+      # -------------------------------------------------------
+      - name: Checkout Story Branch
+        uses: actions/checkout@v4
+        with:
+          ref: story-${{ github.event.inputs.story_number }}
+          fetch-depth: 0
+
+      # -------------------------------------------------------
+      # Step 4 - Find Changed CP Files
+      # -------------------------------------------------------
+      - name: Find Changed CP Files
+        run: |
+          BASE_BRANCH="tst2"
+          CP_DIR="customisations/$INTERFACE/cp_files"
+
+          echo "Comparing story-$STORY_NUMBER against $BASE_BRANCH..."
+
+          git fetch origin "$BASE_BRANCH"
+
+          CHANGED=$(git diff --name-status "origin/$BASE_BRANCH" "HEAD" -- "$CP_DIR" 2>/dev/null || echo "")
+
+          if [ -z "$CHANGED" ]; then
+            echo "No CP file changes found for $INTERFACE in story $STORY_NUMBER"
+            echo "CHANGES=" >> $GITHUB_ENV
+          else
+            echo "Changed files:"
+            echo "$CHANGED"
+            # Store changes - encode newlines for env var
+            ENCODED=$(echo "$CHANGED" | base64 -w 0)
+            echo "CHANGES=$ENCODED" >> $GITHUB_ENV
+          fi
+
+      # -------------------------------------------------------
+      # Step 5 - Deploy Changed Files via WebDAV
+      # -------------------------------------------------------
+      - name: Deploy CP Files via WebDAV
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request
+          import urllib.error
+          import base64
+          import os
+
+          webdav_url = os.environ["WEBDAV_URL"]
+          interface = os.environ["INTERFACE"]
+          story_number = os.environ["STORY_NUMBER"]
+          changes_encoded = os.environ.get("CHANGES", "")
+
+          if not changes_encoded:
+            print("No CP file changes to deploy.")
+            exit(0)
+
+          # Decode changes
+          changes = base64.b64decode(changes_encoded).decode().strip().split("\n")
+
+          username = "${{ secrets.B2C_CP_LOGIN_USER }}"
+          password = "${{ secrets.B2C_CP_LOGIN_PASS }}"
+          credentials = base64.b64encode(f"{username}:{password}".encode()).decode()
+
+          cp_dir = f"customisations/{interface}/cp_files"
+
+          stats = {"uploaded": 0, "deleted": 0, "skipped": 0, "errors": 0}
+
+          print(f"==========================================")
+          print(f"Deploying CP files for: {interface}")
+          print(f"Target URL: {webdav_url}")
+          print(f"Total changes: {len(changes)}")
+          print(f"==========================================")
+
+          def webdav_request(url, method, file_path=None):
+            if method == "PUT" and file_path:
+              with open(file_path, "rb") as f:
+                data = f.read()
+              req = urllib.request.Request(url, data=data, method="PUT")
+              req.add_header("Content-Type", "application/octet-stream")
+            else:
+              req = urllib.request.Request(url, method=method)
+            req.add_header("Authorization", f"Basic {credentials}")
+            try:
+              with urllib.request.urlopen(req) as resp:
+                return resp.status
+            except urllib.error.HTTPError as e:
+              return e.code
+
+          for change in changes:
+            parts = change.split("\t")
+            if len(parts) < 2:
+              continue
+
+            status = parts[0]
+            file_path = parts[1]
+
+            webdav_path = file_path.replace(f"{cp_dir}/", "")
+            full_url = f"https://{webdav_url}/{webdav_path}"
+
+            if status == "D":
+              print(f"  DELETING: {webdav_path}")
+              status_code = webdav_request(full_url, "DELETE")
+              if status_code in [200, 204, 404]:
+                print(f"  Successfully deleted: {webdav_path}")
+                stats["deleted"] += 1
+              elif status_code == 403:
+                print(f"  WARNING: Skipped (permission denied): {webdav_path}")
+                stats["skipped"] += 1
+              else:
+                print(f"  ERROR: Failed to delete {webdav_path} - Status: {status_code}")
+                stats["errors"] += 1
+            else:
+              action = "ADDING" if status == "A" else "UPDATING"
+              print(f"  {action}: {webdav_path}")
+              status_code = webdav_request(full_url, "PUT", file_path)
+              if status_code in [200, 201, 204]:
+                print(f"  Successfully uploaded: {webdav_path}")
+                stats["uploaded"] += 1
+              elif status_code == 403:
+                print(f"  WARNING: Skipped (permission denied): {webdav_path}")
+                stats["skipped"] += 1
+              else:
+                print(f"  ERROR: Failed to upload {webdav_path} - Status: {status_code}")
+                stats["errors"] += 1
+
+          print(f"==========================================")
+          print(f"Deploy to Dev Complete!")
+          print(f"  Uploaded : {stats['uploaded']}")
+          print(f"  Deleted  : {stats['deleted']}")
+          print(f"  Skipped  : {stats['skipped']} (permission denied)")
+          print(f"  Errors   : {stats['errors']}")
+          print(f"==========================================")
+          print(f"NOTE: Files deployed to Development area only.")
+          print(f"Promotion to Staging/Production must be done")
+          print(f"manually through the CP UI as normal.")
+
+          if stats["errors"] > 0:
+            print(f"WARNING: {stats['errors']} files failed to deploy.")
+            exit(1)
+          PYEOF
