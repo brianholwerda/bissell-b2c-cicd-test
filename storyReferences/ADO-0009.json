@@ -1,0 +1,12 @@
+{
+  "story": "ADO-0009",
+  "elements": [
+    {
+      "interface": "bissell",
+      "type": "Workspace",
+      "id": "104075",
+      "name": "BISSELL Chat Interaction",
+      "zipPath": "customisations/bissell/workspaces/104075_BISSELL_Chat_Interaction.zip"
+    }
+  ]
+}
