@@ -1,0 +1,27 @@
+[
+    {
+        "name": "EnableWarehouseTab",
+        "defaultValue": false,
+        "dataType": "boolean"
+    },
+    {
+        "name": "EnableConsumerCareTab",
+        "defaultValue": false,
+        "dataType": "boolean"
+    },
+    {
+        "name": "EnableARTabs",
+        "defaultValue": false,
+        "dataType": "boolean"
+    },
+    {
+        "name": "EnableSearchTab",
+        "defaultValue": false,
+        "dataType": "boolean"
+    },
+    {
+        "name": "EnableAllTabs",
+        "defaultValue": false,
+        "dataType": "boolean"
+    }
+]

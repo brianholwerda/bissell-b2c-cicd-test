@@ -141,3 +141,9 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# BUI Extension build output
+customisations/**/extensions/**/dist/
+
+# RefundsDashboard BUI Extension build output
+customisations/**/extensions/RefundsDashboard/RefundsDashboard/

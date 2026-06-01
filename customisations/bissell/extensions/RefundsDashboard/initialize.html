@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refunds Dashboard</title>
+  </head>
+  <script>
+    let globalConfigs = {};
+    ORACLE_SERVICE_CLOUD.extension_loader.load("RefundsDashboard", "1.0").then(function(extensionLibrary) {
+
+      // INITIALIZE Oracle B2C Service Integration Settings
+      extensionLibrary.getGlobalContext().then(function(globalContext) {
+        let phpURL = globalContext.getInterfaceUrl() + "/php/custom/contactorderhistoryv2.php";
+        let refundsURL = globalContext.getInterfaceUrl() + "/php/custom/refundsdashboard.php";
+        globalContext.getSessionToken().then(function(agentSession) {
+          let sessionID = agentSession;
+
+          const oracleIntegration = {
+            "PHPUrl": phpURL,
+            "Session": sessionID,
+            "SiteURL": phpURL.split("/cgi-bin", 1)
+          };
+
+          const refundsIntegration = {
+            "PHPUrl": refundsURL,
+            "Session": sessionID,
+            "SiteURL": refundsURL.split("/cgi-bin", 1)
+          };
+          
+          globalContext.registerAction("GETOraceIntegrationSettings", function() {
+            return oracleIntegration;
+          });
+
+          globalContext.registerAction("GETRefundsIntegrationSettings", function() {
+            return refundsIntegration;
+          });
+
+          globalContext.getExtensionContext("RefundsDashboard").then(function (extensionContext) {
+                extensionContext.getProperties(['EnableWarehouseTab', 'EnableConsumerCareTab', 'EnableARTabs', 'EnableSearchTab', 'EnableAllTabs']).then(function (extensionProperties) {
+                    globalConfigs.ShowWarehouseTab = extensionProperties.get('EnableWarehouseTab').getValue();
+                    globalConfigs.ShowConsumerCareTab = extensionProperties.get('EnableConsumerCareTab').getValue();
+                    globalConfigs.ShowARTabs = extensionProperties.get('EnableARTabs').getValue();
+                    globalConfigs.ShowSearchTab = extensionProperties.get('EnableSearchTab').getValue();
+                    globalConfigs.ShowAllTabs = extensionProperties.get('EnableAllTabs').getValue();
+
+                    // REGISTER Global Action to return Global Configuration Settings anywhere in the Vue project
+                    globalContext.registerAction("GetRefundsDashboardConfiguration", function() {
+                        return globalConfigs;
+                    });
+                });
+            });
+        });
+      });
+
+      // INITIALIZE Oracle B2C Service Global Menu Icon - Print RA Dashboard
+      extensionLibrary.registerUserInterfaceExtension(function(uiContext) {
+        uiContext.getGlobalHeaderContext().then(function(globalHeaderContext) {
+          globalHeaderContext.getMenu('RefundsDashboardMenu').then(function(dashboardMenuItem) {
+            dashboardMenuItem.setLabel("Launch Refunds Dashboard");
+            let icon = dashboardMenuItem.createIcon("font awesome");
+            icon.setIconClass("fa-dollar-sign"); // Available options https://fontawesome.com/v4/icons/
+            dashboardMenuItem.addIcon(icon);
+            dashboardMenuItem.setHandler(function() {
+              uiContext.getContentPaneContext().then(function(contentPaneContext) {
+                contentPaneContext.createContentPane().then(function(contentPane) {
+                  contentPane.setContentUrl("index.html");
+                  contentPane.setName("Refunds Dashboard");
+                });
+              });
+            });
+
+            dashboardMenuItem.render();
+          });
+        });
+      });
+    });
+
+  </script>
+</html>
